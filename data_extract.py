@@ -28,10 +28,8 @@ def google_search_link(search_term):
 
 wikipedia_link = google_search_link('nvidia')
 
-wikipedia_link
-
+# Get the content from Wikipedia
 def get_wikipedia_text(wikipedia_link):
-  # Get the content from Wikipedia
   page = requests.get(wikipedia_link)
   soup = BeautifulSoup(page.content, "html.parser")
   final_texts = []
@@ -51,5 +49,8 @@ def get_wikipedia_text(wikipedia_link):
 
 final_text = get_wikipedia_text(wikipedia_link)
 
-final_text
+# Save the text to file
+text_file = open("output.txt", "w")
+text_file.write(final_text)
+text_file.close()
 
