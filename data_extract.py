@@ -25,7 +25,9 @@ def google_search_link(search_term):
   query = "wikipedia " + search_term
 
   for j in search(query, tld="co.in", num=2, stop=10, pause=2):
-	  return j
+  	for j in search(query, tld="co.in", num=2, stop=10, pause=2):
+    		if 'https://en.wikipedia.org/wiki/' in str(j):
+	    		return j
 
 wikipedia_link = google_search_link('nvidia')
 
@@ -41,12 +43,6 @@ def get_wikipedia_text(link):
   final_text = ' '.join(final_texts).strip().replace("\'s","'s")
 
   # Since our chatGPT api can work with max 90,000 tokens per minute, we will cap the number of tokens in our wikipedia text
-  all_tokens = final_text.split()
-  no_of_tokens = len(all_tokens)
-
-  if no_of_tokens >= 90000:
-    return ' '.join(all_tokens[:90000])
-  return final_text
 
 final_text = get_wikipedia_text(wikipedia_link)
 
