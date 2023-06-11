@@ -21,6 +21,7 @@ warnings.filterwarnings('ignore')
 Google search link function takes in the search_term we need to search for and 
   then returns the first wikipedia link from the google search
 '''
+
 def google_search_link(search_term):
   query = "wikipedia " + search_term
 
@@ -28,6 +29,8 @@ def google_search_link(search_term):
   	for j in search(query, tld="co.in", num=2, stop=10, pause=2):
     		if 'https://en.wikipedia.org/wiki/' in str(j):
 	    		return j
+		else:
+			return 'NONE'
 
 wikipedia_link = google_search_link('nvidia')
 
@@ -44,7 +47,10 @@ def get_wikipedia_text(link):
 
   # Since our chatGPT api can work with max 90,000 tokens per minute, we will cap the number of tokens in our wikipedia text
 
-final_text = get_wikipedia_text(wikipedia_link)
+if wikipedia_link == 'NONE':
+	final_text = 'NONE'
+else:
+	final_text = get_wikipedia_text(wikipedia_link)
 
 # Save the text to file
 text_file = open("output.txt", "w")
