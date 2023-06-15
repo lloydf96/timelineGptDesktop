@@ -1,10 +1,15 @@
 from langchain.text_splitter import CharacterTextSplitter
 import tiktoken
+import pandas as pd
+import openai
 ### https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 
 ENCODING_NAME = "gpt-3.5-turbo"
-CHUNK_SIZE = 4000
-CHUNK_OVERLAP = 1000
+CHUNK_SIZE = 2000
+CHUNK_OVERLAP = 500
+BULLET_SIGN = '->'
+API_KEY = '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'
+openai.api_key = API_KEY
 
 def num_tokens_from_string(string: str) -> int:
     """Returns the number of tokens in a text string."""
@@ -45,8 +50,8 @@ def get_summary(text):
       model="gpt-3.5-turbo",
       messages=[
             {"role": "system", "content": "You are an extractive summarizer"},
-            {"role": "user", "content": f"For the text below, give a list of all events with dates? Begin" +\
-             f" the bullet points with '{BULLET_SIGN}' and seperate date and event with ':' \n\n Text : {text}"}
+            {"role": "user", "content": f"For the text below, please extract all events along with their dates in the form of a list. Begin" +\
+             f" the bullet points with '{BULLET_SIGN}' and separate date and event with ':'. Each event list should begin with the date followed by the event description \n\n Text : {text}"}
         ],temperature = 0)
 
     response = result.choices[0].message.content
@@ -76,6 +81,10 @@ def process_summary(summary_list):
     '''
     Edit list of summary
     '''
+    
+    #keep events which have colon in between
+    summary_list = [event for event in summary_list if ':' in event]
+
     #split date:event into date,event
     summary_list = [event.split(':',1) for event in summary_list]
 
@@ -88,9 +97,9 @@ def process_summary(summary_list):
     return summary_list
 
 
-def summarize_text(text)
+def summarize_text(text):
     '''
-    This function converts text into list of summary
+    This function converts text into list of summary and saves it as a dataframe
     '''
     # Convert text to chunks
     text_list = get_chunks(text)
@@ -100,6 +109,9 @@ def summarize_text(text)
 
     # Process summary list
     summary_list = process_summary(summary_list)
-    return summary_list
+    summary_df = pd.DataFrame(data = summary_list,columns = ['date','event'])
+    summary_df.to_pickle(os.path.join(os.path.dirname(os.getcwd()),'data','summary.pkl'))
+    
+    return summary_df
 
 
