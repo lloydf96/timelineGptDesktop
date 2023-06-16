@@ -110,7 +110,6 @@ def summarize_text(text):
     # Process summary list
     summary_list = process_summary(summary_list)
     summary_df = pd.DataFrame(data = summary_list,columns = ['date','event'])
-    summary_df.to_pickle(os.path.join(os.path.dirname(os.getcwd()),'data','summary.pkl'))
     
     return summary_df
 
