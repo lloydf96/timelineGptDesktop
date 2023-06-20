@@ -1,0 +1,59 @@
+;
+
+
+const timelineContainer = document.getElementById('timeline-container');
+                    var cnt = 0;
+
+                    events.forEach(event => {
+
+                        if (cnt%2 == 0)
+                        {
+                            const timelineItem = document.createElement('div');
+                            timelineItem.className = 'container left';
+
+                            const content_text = document.createElement('div');
+                            content_text.className = 'content';
+
+                            const date = document.createElement('h2');
+                            date.textContent = event.date;
+                            const summary = document.createElement('p');
+                            summary.textContent = event.event;
+
+                            content_text.appendChild(date);
+                            content_text.appendChild(summary);
+
+                            timelineItem.appendChild(content_text);
+
+                            timelineContainer.appendChild(timelineItem);
+                        }
+                        else
+                        {
+                            const timelineItem = document.createElement('div');
+                            timelineItem.className = 'container right';
+
+                            const content_text = document.createElement('div');
+                            content_text.className = 'content';
+
+                            const date = document.createElement('h2');
+                            date.textContent = event.date;
+                            const summary = document.createElement('p');
+                            summary.textContent = event.event;
+
+                            content_text.appendChild(date);
+                            content_text.appendChild(summary);
+
+                            timelineItem.appendChild(content_text);
+
+                            timelineContainer.appendChild(timelineItem);
+                        }
+                        cnt += 1
+                    });
+                
+        };
+
+    setTimeout(downloader, 1000);
+    </script>
+
+
+</body>
+</html>
