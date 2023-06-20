@@ -13,23 +13,41 @@ import json
 
 DATA_PATH = os.path.join(os.getcwd(),'data')
 
-def get_timeline_html(topic):
-    with open(os.path.join(DATA_PATH,'timeline_display.html'),'w') as file:
-        file.truncate()
-        with open(os.path.join(DATA_PATH,'template_p1.txt')) as p1:
-            p1_str = p1.read()
-            p1_str = p1_str.replace('&&&&&&&&name&&&&&&&',topic)
-            file.write(p1_str)
-        with open(os.path.join(DATA_PATH,'events.json'),'r') as p2:
-            events = json.load(p2)
-            file.write(json.dumps(events))
-        with open(os.path.join(DATA_PATH,'template_p2.txt'),'r') as p3:
-            file.write(p3.read())
+def get_timeline_html(topic,download):
+    if download:
+        with open(os.path.join(DATA_PATH,'timeline_display.html'),'w') as file:
+            file.truncate()
+            with open(os.path.join(DATA_PATH,'template_p1.txt')) as p1:
+                p1_str = p1.read()
+                p1_str = p1_str.replace('&&&&&&&&name&&&&&&&',topic)
+                file.write(p1_str)
+            with open(os.path.join(DATA_PATH,'events.json'),'r') as p2:
+                events = json.load(p2)
+                file.write(json.dumps(events))
+            with open(os.path.join(DATA_PATH,'template_p2.txt'),'r') as p3:
+                file.write(p3.read())
+    
+        with open(os.path.join(DATA_PATH,'timeline_display.html'),'r') as s:
+            html_string = s.read()
+        return html_string
 
-    with open(os.path.join(DATA_PATH,'timeline_display.html'),'r') as s:
-        html_string = s.read()
-    return html_string
-
+    else:
+        with open(os.path.join(DATA_PATH,'timeline_display.html'),'w') as file:
+            file.truncate()
+            with open(os.path.join(DATA_PATH,'template_p1_download.txt')) as p1:
+                p1_str = p1.read()
+                p1_str = p1_str.replace('&&&&&&&&name&&&&&&&',topic)
+                file.write(p1_str)
+            with open(os.path.join(DATA_PATH,'events.json'),'r') as p2:
+                events = json.load(p2)
+                file.write(json.dumps(events))
+            with open(os.path.join(DATA_PATH,'template_p2.txt'),'r') as p3:
+                file.write(p3.read())
+    
+        with open(os.path.join(DATA_PATH,'timeline_display.html'),'r') as s:
+            html_string = s.read()
+        st.session_state['download_timeline_png_key'] = True
+        return html_string
 
 def get_summary(topic):
     
@@ -76,10 +94,22 @@ def generate_json(df):
     with open(os.path.join(DATA_PATH,'events.json'), 'w') as f:
         json.dump(df_dict, f)
 
+def update_download_timeline_png_change():
+    st.session_state['download_timeline_png_key'] = False
+    
 def generate_timeline(topic,right_container):
-    html_string = get_timeline_html(topic)
+    html_string = get_timeline_html(topic,st.session_state['download_timeline_png_key'])
     with right_container:
-        update_timeline_button = st.button("Update Timeline!",on_click = update_timeline_change,help = 'Edit the DataFrame and Click on "Update Timeline" to reflect the changes')
+        right_left_container,right_right_container = st.columns([0.7,0.3])
+
+        with right_left_container:
+            update_timeline_button = st.button("Update Timeline!",on_click = update_timeline_change,\
+                                               help = 'Edit the DataFrame and Click on "Update Timeline" to reflect the changes')
+
+        with right_right_container:
+            download_timeline_button = st.button("Download Timeline!",on_click = update_download_timeline_png_change,\
+                                                 help = 'Download timeline in .png form')
+            
         components.html(html_string,scrolling = True,height = 400)
 
 def update_summary_change(): 
