@@ -25,13 +25,21 @@ def get_wiki_link(search_term):
   url = f'https://en.wikipedia.org/w/index.php?search={search_term}&title=Special:Search&profile=advanced&fulltext=1&ns0=1'
   page = requests.get(url)
   soup = BeautifulSoup(page.content, "html.parser")
-
-  for i, link in enumerate(soup.findAll('a')):
-    if  i == 30:
-      if '/w/index' in link['href']:
-        return 'NONE'
-      if i == 36:
-        return link['href']
+  
+  links = []
+  main_url = 'https://en.wikipedia.org/'
+  for link in soup.findAll('a'):
+    links.append(link['href'])
+    
+  if 'redlink' in links[30]:
+    return 'NONE'
+  elif '/wiki/' in links[30]:
+    return links[30]
+    
+  if 'Special:Search' in links[30]:
+    for link in links[31:]:
+      if '/wiki/' in link and 'Article_wizard' not in link:
+        return link
 
 wikipedia_link = get_wiki_link('nvidia')
 
