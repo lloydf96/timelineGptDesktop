@@ -32,7 +32,12 @@ def get_wiki_link(search_term):
     links.append(link['href'])
     
   if 'redlink' in links[30]:
-    return 'NONE'
+    if 'offset' in str(links[32]):
+      for link in links[32:]:
+        if '/wiki/' in link:
+          return link
+    else:
+      return 'NONE'
   elif '/wiki/' in links[30]:
     return links[30]
     
