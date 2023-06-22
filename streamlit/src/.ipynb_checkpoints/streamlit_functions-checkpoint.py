@@ -12,6 +12,7 @@ import streamlit.components.v1 as components
 import json
 
 DATA_PATH = os.path.join(os.getcwd(),'data')
+FEEDBACK_PATH = os.path.join(os.getcwd(),"feedback","feedback.csv")
 
 def get_timeline_html(topic,download):
     if download:
@@ -49,6 +50,7 @@ def get_timeline_html(topic,download):
         st.session_state['download_timeline_png_key'] = True
         return html_string
 
+@st.cache_data(show_spinner=False)
 def get_summary(topic):
     
     wikipedia_link = google_search_link(topic)
@@ -60,7 +62,7 @@ def get_summary(topic):
         #st.write(f"Data fetched from {wikipedia_link}")
         text = get_wikipedia_text(wikipedia_link)
         summary = summarize_text(text)
-        return summary
+        return summary,wikipedia_link
 
 # def get_timeline_html(topic):
 #     with open('timeline_display.html','w') as file:
@@ -96,36 +98,21 @@ def generate_json(df):
 
 def update_download_timeline_png_change():
     st.session_state['download_timeline_png_key'] = False
+
+def download_timeline():
     
-def generate_timeline(topic,right_container):
-    html_string = get_timeline_html(topic,st.session_state['download_timeline_png_key'])
-    with right_container:
-        right_left_container,right_right_container = st.columns([0.7,0.3])
+    download_timeline_button = st.button("Download Timeline!",on_click = update_download_timeline_png_change,\
+                                             help = 'Download timeline in .png form')
 
-        with right_left_container:
-            update_timeline_button = st.button("Update Timeline!",on_click = update_timeline_change,\
-                                               help = 'Edit the DataFrame and Click on "Update Timeline" to reflect the changes')
+def save_feedback(feedback_title,feedback_text,feedback_name,feedback_email):
+    dict_feedback = {"title" : feedback_title,
+                     "feedback" : feedback_text,
+                     "name" : feedback_name,
+                     "email" : feedback_email}
+    dict_df = pd.Series(data = [feedback_title,feedback_text,feedback_name,feedback_email],\
+                                    index = ["title","feedback","name","email"])
+    
+    dict_df.to_pickle(FEEDBACK_PATH)
+    
 
-        with right_right_container:
-            download_timeline_button = st.button("Download Timeline!",on_click = update_download_timeline_png_change,\
-                                                 help = 'Download timeline in .png form')
-            
-        components.html(html_string,scrolling = True,height = 400)
 
-def update_summary_change(): 
-
-    if 'data_editor' in st.session_state:
-        st.session_state['update_summary_key'] = True
-        summary = st.session_state['summary_key']
-        data_editor = st.session_state['data_editor']
-        edited_rows = data_editor['edited_rows']
-        
-        for i,edits in edited_rows.items():
-            for col,val in edits.items():
-                summary.loc[i,col] = val
-        st.session_state['summary'] = summary
-
-def update_timeline_change():
-    st.session_state['update_timeline_key'] = True
-
-# st.write(st.session_state)
