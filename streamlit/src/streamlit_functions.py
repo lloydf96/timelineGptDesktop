@@ -6,7 +6,6 @@ import sys
 sys.path.append("..\src")
 sys.path.append("\src")
 from summary_functions import  *
-from streamlit_functions import *
 from data_extract import *
 import streamlit.components.v1 as components
 import json
@@ -53,7 +52,7 @@ def get_timeline_html(topic,download):
 @st.cache_data(show_spinner=False)
 def get_summary(topic):
     
-    wikipedia_link = google_search_link(topic)
+    wikipedia_link = get_wiki_link(topic)
     if wikipedia_link == "NONE":
         st.write("No Input Given")
         return None
@@ -64,6 +63,11 @@ def get_summary(topic):
         summary = summarize_text(text)
         return summary,wikipedia_link
 
+
+@st.cache_data(show_spinner=False)
+def get_summary_from_text(text):
+    summary = summarize_text(text)
+    return summary
 
 def download_summary(summary,topic):
     

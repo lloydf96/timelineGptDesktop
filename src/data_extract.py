@@ -46,7 +46,6 @@ def get_wiki_link(search_term):
       if '/wiki/' in link and 'Article_wizard' not in link:
         return link
 
-wikipedia_link = get_wiki_link('nvidia')
 
 # Get the content from Wikipedia
 def get_wikipedia_text(link):
@@ -61,11 +60,6 @@ def get_wikipedia_text(link):
   return final_text
 
   # Since our chatGPT api can work with max 90,000 tokens per minute, we will cap the number of tokens in our wikipedia text
-
-if wikipedia_link == 'NONE':
-  final_text = 'NONE'
-else:
-  final_text = get_wikipedia_text(wikipedia_link)
 
 # # Save the text to file
 # text_file = open("output.txt", "w")

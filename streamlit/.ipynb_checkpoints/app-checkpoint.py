@@ -12,7 +12,7 @@ import json
 from streamlit_functions import *
 
 APP_PATH = os.getcwd()
-
+MAX_TEXT_CHARS = 48000
 SUMMARY_COLUMN_CONFIG ={
         "Event" : st.column_config.Column(
             "Event",
@@ -39,17 +39,30 @@ if 'first_timeline_key' not in st.session_state:
 if 'download_timeline_png_key' not in st.session_state:
     st.session_state['download_timeline_png_key'] = True
 
-topic = st.text_input(label = "", max_chars = 20,help = "Enter a topic for which you need to generate a timeline.")
+topic = st.text_input(label = "Enter Topic", max_chars = 20,help = "Enter a topic for which you need to generate a timeline.")
+with st.expander("Or add your own text"):
+    topic_text = st.text_area(label = "topic_text",label_visibility = "collapsed", max_chars = 48000, height = 400)
+
 enter_button = st.button("Generate Timeline!")
 
 if enter_button:
     with st.spinner('Generating Timeline...'):
         #st.write(topic) #comment in production
-        summary,wikipedia_link = get_summary(topic)
+        if len(topic)>0 & len(topic_text) > 0:
+            st.warning('As both the topic and user defined text are populated, we use "Enter Topic" text input to fetch topic data and generate the timeline. If you need to use user defined text, delete the text in "Enter Topic" text box ', icon="⚠️")
+        if len(topic) > 0:
+            summary,source = get_summary(topic) 
+        else:
+            summary = get_summary_from_text(topic_text)
+            source = "User Text"
+            topic = topic_text.split(" ",1)[0]
+        
+            
         #summary = pd.read_pickle(os.path.join(APP_PATH,'data','summary.pkl'))
         summary.columns = ['Date','Event']
         summary['Select'] = True
-        st.session_state['wikipedia_link_key'] = wikipedia_link
+        st.session_state['source_key'] = source
+        st.session_state['topic_key'] = topic
         st.session_state['update_summary_key'] = True
         st.session_state['summary_key'] = summary
 
@@ -64,13 +77,13 @@ if st.session_state['update_summary_key'] or enter_button:
             st.write("#### Timeline Data")
             
         with right_left_container:
-            download_summary(summary,topic)
+            download_summary(summary,st.session_state['topic_key'])
 
         form_data_editor = st.form("data_editor")
         left_left_container,left_right_container = form_data_editor.columns([0.75,0.25])
         
         with left_left_container:
-            st.caption(f"Source : {st.session_state['wikipedia_link_key']}")
+            st.caption(f"Source : {st.session_state['source_key']}")
         with left_right_container:
             update_timeline_button = st.form_submit_button("Update Timeline!",\
                                                help = 'Edit the DataFrame and Click on "Update Timeline" to reflect the changes')
@@ -92,7 +105,7 @@ if st.session_state['update_summary_key'] or enter_button:
                 generate_json(display_summary)
                 
         with right_container:
-            html_string = get_timeline_html(topic,st.session_state['download_timeline_png_key'])
+            html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['download_timeline_png_key'])
             download_timeline() 
             components.html(html_string,scrolling = True,height = 400)
                 

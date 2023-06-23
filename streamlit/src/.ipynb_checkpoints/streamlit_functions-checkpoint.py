@@ -6,7 +6,6 @@ import sys
 sys.path.append("..\src")
 sys.path.append("\src")
 from summary_functions import  *
-from streamlit_functions import *
 from data_extract import *
 import streamlit.components.v1 as components
 import json
@@ -53,7 +52,7 @@ def get_timeline_html(topic,download):
 @st.cache_data(show_spinner=False)
 def get_summary(topic):
     
-    wikipedia_link = google_search_link(topic)
+    wikipedia_link = get_wiki_link(topic)
     if wikipedia_link == "NONE":
         st.write("No Input Given")
         return None
@@ -64,22 +63,11 @@ def get_summary(topic):
         summary = summarize_text(text)
         return summary,wikipedia_link
 
-# def get_timeline_html(topic):
-#     with open('timeline_display.html','w') as file:
-#         file.truncate()
-#         with open('template_p1.txt') as p1:
-#             p1_str = p1.read()
-#             p1_str = p1_str.replace('&&&&&&&&name&&&&&&&',topic)
-#             file.write(p1_str)
-#         with open('events.json','r') as p2:
-#             events = json.load(p2)
-#             file.write(json.dumps(events))
-#         with open('template_p2.txt','r') as p3:
-#             file.write(p3.read())
 
-#     with open('timeline_display.html','r') as s:
-#         html_string = s.read()
-#     return html_string
+@st.cache_data(show_spinner=False)
+def get_summary_from_text(text):
+    summary = summarize_text(text)
+    return summary
 
 def download_summary(summary,topic):
     
