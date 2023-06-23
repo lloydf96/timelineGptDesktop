@@ -59,7 +59,7 @@ def get_wikipedia_text(link):
   final_text = ' '.join(final_texts).strip().replace("\'s","'s")
   return final_text
 
-  # Since our chatGPT api can work with max 90,000 tokens per minute, we will cap the number of tokens in our wikipedia text
+# Since our chatGPT api can work with max 90,000 tokens per minute, we will cap the number of tokens in our wikipedia text
 
 # # Save the text to file
 # text_file = open("output.txt", "w")
