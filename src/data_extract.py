@@ -27,7 +27,7 @@ def get_wiki_link(search_term):
   soup = BeautifulSoup(page.content, "html.parser")
   
   links = []
-  main_url = 'https://en.wikipedia.org/'
+  main_url = 'https://en.wikipedia.org'
   for link in soup.findAll('a'):
     links.append(link['href'])
     
@@ -35,16 +35,16 @@ def get_wiki_link(search_term):
     if 'offset' in str(links[32]):
       for link in links[32:]:
         if '/wiki/' in link:
-          return link
+          return main_url + link
     else:
       return 'NONE'
   elif '/wiki/' in links[30]:
-    return links[30]
+    return main_url + links[30]
     
   if 'Special:Search' in links[30]:
     for link in links[31:]:
       if '/wiki/' in link and 'Article_wizard' not in link:
-        return link
+        return main_url + link
 
 
 # Get the content from Wikipedia
