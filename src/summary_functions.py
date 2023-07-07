@@ -96,8 +96,71 @@ def process_summary(summary_list):
     
     return summary_list
 
+def get_approx_month_year(df):
+    list_of_dates = df['date'].tolist()
+    result = openai.ChatCompletion.create(
+      model="gpt-3.5-turbo",
+      messages=[
+            {"role": "system", "content": "You are a function that gives a single month year approximation for a list of phrases"},
+            {"role": "user", "content":  f"for the list of phrase give a list of month year approximation {list_of_dates}. Format the list as follows: If spans across centuries, give a single representative month and year that lies in the period. Give the output in the format [ <input phrase>:  <output month> <output year> <BC or AD time system>]. If <output year> > 10000, give None"}
+        ],temperature = 0)
+
+    response = result.choices[0].message.content
+    if "\n\n" in response:
+        response = response.split("\n\n")[1]
+        
+    dates = response.split('\n')
+    date_mapper = dict()
+    for date in dates:
+        key, value = re.sub(r'[^A-Za-z0-9\,\': ]+', '', date).strip().split(': ')
+        key =  re.sub(r'[\']+', '', key)
+        value =  re.sub(r'[\,\']+', '', value)
+        
+        # Check chatGPI returns None when there is year in the input data
+        # If yes, get the year and add 'January' as default month
+        # If No, then skip this process
+        
+        if value == 'None':
+            year = re.search(f'[0-9].*', value)
+            if year == None:
+                date_mapper[key] = 'None'
+            else:
+                date_mapper[key] = 'January' + ' ' + year[0]
+        else:
+            date_mapper[key] = value
+    return date_mapper
 
 def summarize_text(text):
+    '''
+    This function converts text into list of summary and saves it as a dataframe
+    '''
+    # Convert text to chunks
+    text_list = get_chunks(text)
+
+    # Get list of summary from chunks
+    summary_list = get_list_of_summary(text_list)
+
+    # Process summary list
+    summary_list = process_summary(summary_list)
+
+    #get summary dataframe from summary list
+    summary_df = pd.DataFrame(data = summary_list,columns = ['date','event'])
+
+    #strip any space from front and back of the date
+    summary_df['date'] = summary_df['date'].str.strip()
+
+    #get approximate month year from dates list
+    date_map = get_approx_month_year(summary_df)
+
+    #add timeline location to summary_df date
+    summary_df['timeline'] = summary_df['date'].map(date_map)
+
+    #get month year and AD/BC from month year chatGPT output
+    summary_df[['month', 'year', 'AD_BC']] = summary_df['timeline'].str.split(expand=True)
+    
+    return summary_df
+    
+def summarize_text_old(text):
     '''
     This function converts text into list of summary and saves it as a dataframe
     '''
