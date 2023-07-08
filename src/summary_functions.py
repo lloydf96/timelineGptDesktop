@@ -5,13 +5,14 @@ import openai
 import ast
 import re
 import os
+import streamlit as st
 ### https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 
 ENCODING_NAME = "gpt-3.5-turbo"
 CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 500
 BULLET_SIGN = '->'
-API_KEY = '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'
+API_KEY = st.secrets['chatgpt_api']
 openai.api_key = API_KEY
 ERROR_LOG_FOLDER = os.getcwd()
 print(ERROR_LOG_FOLDER)

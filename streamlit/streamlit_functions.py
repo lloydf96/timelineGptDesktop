@@ -4,7 +4,6 @@ import numpy as np
 import os
 import sys
 sys.path.append("..\src")
-sys.path.append("\src")
 from summary_functions import  *
 from data_extract import *
 import streamlit.components.v1 as components
