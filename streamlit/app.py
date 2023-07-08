@@ -3,6 +3,7 @@ import pandas as pd
 import numpy as np
 import os
 import sys
+import re
 sys.path.append("..\src")
 sys.path.append("src")
 from summary_functions import  *
@@ -59,7 +60,6 @@ if enter_button:
         
             
         #summary = pd.read_pickle(os.path.join(APP_PATH,'data','summary.pkl'))
-        summary.columns = ['Date','Event']
         summary['Select'] = True
         st.session_state['source_key'] = source
         st.session_state['topic_key'] = topic
@@ -109,7 +109,7 @@ if st.session_state['update_summary_key'] or enter_button:
             download_timeline() 
             components.html(html_string,scrolling = True,height = 400)
                 
-        summary = form_data_editor.data_editor(summary,num_rows="dynamic",use_container_width=True,\
+        summary = form_data_editor.data_editor(summary[['Date','Event','Select']],num_rows="dynamic",use_container_width=True,\
                                     key = 'data_editor',column_config = SUMMARY_COLUMN_CONFIG,\
                                  hide_index = True)
 
