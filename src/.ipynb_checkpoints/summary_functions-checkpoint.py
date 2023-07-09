@@ -15,7 +15,6 @@ BULLET_SIGN = '->'
 API_KEY = st.secrets['chatgpt_api']
 openai.api_key = API_KEY
 ERROR_LOG_FOLDER = os.getcwd()
-print(ERROR_LOG_FOLDER)
 
 def num_tokens_from_string(string: str) -> int:
     """Returns the number of tokens in a text string."""
@@ -202,7 +201,6 @@ def summarize_text(text):
         summary_df = summary_df.sort_values(['year_loc','month']).reset_index(drop = True)
 
         # a = 1/0
-        print(summary_df)
         
     except:
         summary_df.to_pickle(os.path.join(os.getcwd(),'data','log_summary_df.pkl'))
