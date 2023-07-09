@@ -4,8 +4,8 @@ import numpy as np
 import os
 import sys
 import re
-sys.path.append("..\src")
-sys.path.append("src")
+sys.path.append(os.path.join(os.getcwd(),"src"))
+# sys.path.append("..\src")
 from summary_functions import  *
 from data_extract import *
 import streamlit.components.v1 as components
@@ -57,7 +57,7 @@ if enter_button:
             summary = get_summary_from_text(topic_text)
             source = "User Text"
             topic = topic_text.split(" ",1)[0]
-        
+            topic = re.sub(r"[^a-zA-Z]", "", topic)
             
         #summary = pd.read_pickle(os.path.join(APP_PATH,'data','summary.pkl'))
         summary['Select'] = True

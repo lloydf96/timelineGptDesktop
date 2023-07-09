@@ -1,6 +1,5 @@
-streamlit/.streamlit/
+.streamlit/
 **/.ipynb_checkpoints/
 **/__pycache__/
-streamlit/old/
 
 

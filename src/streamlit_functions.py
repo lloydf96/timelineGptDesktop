@@ -10,7 +10,7 @@ import streamlit.components.v1 as components
 import json
 
 DATA_PATH = os.path.join(os.getcwd(),'data')
-FEEDBACK_PATH = os.path.join(os.getcwd(),"feedback","feedback.csv")
+FEEDBACK_PATH = os.path.join(os.getcwd(),"data","feedback","feedback.csv")
 
 def get_timeline_html(topic,download):
     if download:

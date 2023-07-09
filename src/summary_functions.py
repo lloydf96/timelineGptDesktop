@@ -186,7 +186,7 @@ def summarize_text(text):
         date_map = get_approx_month_year(summary_df)
         
         # print(date_map)
-        # print(summary_df)
+        
         
         #add timeline location to summary_df date
         summary_df['timeline'] = summary_df['Date'].map(date_map)
@@ -199,9 +199,10 @@ def summarize_text(text):
         summary_df['year_loc'] = summary_df['year'].astype(int)*summary_df['AD_BC'].apply(lambda x : isBC(x))
     
         #order by year and month
-        summary_df = summary_df.sort_values(['year_loc','month'])
+        summary_df = summary_df.sort_values(['year_loc','month']).reset_index(drop = True)
 
         # a = 1/0
+        print(summary_df)
         
     except:
         summary_df.to_pickle(os.path.join(os.getcwd(),'data','log_summary_df.pkl'))
