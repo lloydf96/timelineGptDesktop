@@ -8,6 +8,7 @@ from summary_functions import  *
 from data_extract import *
 import streamlit.components.v1 as components
 import json
+from datetime import datetime
 
 DATA_PATH = os.path.join(os.getcwd(),'data')
 FEEDBACK_PATH = os.path.join(os.getcwd(),"data","feedback","feedback.csv")
@@ -91,15 +92,14 @@ def download_timeline():
     download_timeline_button = st.button("Download Timeline!",on_click = update_download_timeline_png_change,\
                                              help = 'Download timeline in .png form')
 
-def save_feedback(feedback_title,feedback_text,feedback_name,feedback_email):
-    dict_feedback = {"title" : feedback_title,
-                     "feedback" : feedback_text,
-                     "name" : feedback_name,
-                     "email" : feedback_email}
-    dict_df = pd.Series(data = [feedback_title,feedback_text,feedback_name,feedback_email],\
-                                    index = ["title","feedback","name","email"])
-    
-    dict_df.to_pickle(FEEDBACK_PATH)
+def save_feedback(feedback_title,feedback_text,feedback_name,feedback_email,sheet):
+    # table_name = st.secrets["private_gsheets_url"]
+    todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+    feedback = st.session_state['feedback'] + [todays_date]
+    sheet.insert_row(feedback, 2)
+    # query = f'INSERT INTO "{table_name}" VALUES ("abc","","","","2023-10-09")'
+    # print(query)
+    # connection.execute(query)
     
 
 

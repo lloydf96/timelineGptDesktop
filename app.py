@@ -11,6 +11,19 @@ from data_extract import *
 import streamlit.components.v1 as components
 import json
 from streamlit_functions import *
+from google.oauth2 import service_account
+import gspread
+
+scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
+
+# Create a connection object.
+credentials = service_account.Credentials.from_service_account_info(
+    st.secrets["gcp_service_account"],
+    scopes=scope
+)
+
+client = gspread.authorize(credentials)
+sheet = client.open("timelineGenFeedback").sheet1
 
 APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 48000
@@ -128,13 +141,19 @@ st.markdown(
 with st.expander("Feedback Form"):
     form_feedback = st.form('feedback')
     with form_feedback:
-        feedback_title = st.text_input(label = "Title", max_chars = 50)
-        feedback_text = st.text_input(label = "Feedback", max_chars = 300)
-        feedback_name = st.text_input(label = "Name", max_chars = 50, placeholder = 'Optional')
-        feedback_email = st.text_input(label = "Email", max_chars = 100, placeholder = 'Optional')
-        print(feedback_title,feedback_text,feedback_name,feedback_email)
-        feedback_form_submit = st.form_submit_button("Submit",on_click = save_feedback,args =(feedback_title,feedback_text,feedback_name,feedback_email))
+        feedback_title = st.text_input(label = "Title", max_chars = 50,value = "")
+        feedback_text = st.text_input(label = "Feedback", max_chars = 300,value = "")
+        feedback_name = st.text_input(label = "Name", max_chars = 50, placeholder = 'Optional',value = "")
+        feedback_email = st.text_input(label = "Email", max_chars = 100, placeholder = 'Optional',value = "")
+
+        # st.session_state['feedback'] = [feedback_name,feedback_email,feedback_title,feedback_text]
+        #print(feedback_title,feedback_text,feedback_name,feedback_email) 
+        feedback_form_submit = st.form_submit_button("Submit")
+        
         if feedback_form_submit:
+            todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+            feedback = [feedback_name,feedback_email,feedback_title,feedback_text] + [todays_date]
+            sheet.insert_row(feedback, 2)
             st.success("Feedback Submitted. Thank you!" ,icon = "✅")
             
         
