@@ -1,3 +1,4 @@
+import requests
 from langchain.text_splitter import CharacterTextSplitter
 import tiktoken
 import pandas as pd
@@ -110,7 +111,18 @@ def isBC(x):
     except:
         return 0
 
+def validate_url(url_link):
+    '''
+    This function checks if the input url is a valid url or not. If valid, returns the url. If invalid, it returns a message displaying that link is invalid
+    '''
+    
+    try:
+        response = requests.get(url_link)
+    except:
+        return 'Not a Valid URL Link'
 
+    if str(response) == '<Response [200]>':
+        return url_link
 
 def get_approx_month_year(df):
     list_of_dates = df['Date'].tolist()
