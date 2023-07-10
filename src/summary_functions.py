@@ -11,7 +11,7 @@ import streamlit as st
 
 ENCODING_NAME = "gpt-3.5-turbo"
 CHUNK_SIZE = 2000
-CHUNK_OVERLAP = 500
+CHUNK_OVERLAP = 50
 BULLET_SIGN = '->'
 API_KEY = st.secrets['chatgpt_api']
 openai.api_key = API_KEY
