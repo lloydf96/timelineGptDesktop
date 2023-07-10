@@ -111,18 +111,24 @@ def isBC(x):
     except:
         return 0
 
+def separate_words(text):
+    separated_text = re.sub(r'([a-z0-9])([A-Z0-9])', r'\1 \2', text)
+    return separated_text
+    
 def validate_url(url_link):
     '''
-    This function checks if the input url is a valid url or not. If valid, returns the url. If invalid, it returns a message displaying that link is invalid
+    This function checks if the input url is a valid url or not. 
+        - If valid, returns the scarped text from the url. 
+        - If invalid, it returns a message displaying that link is invalid
     '''
-    
     try:
         response = requests.get(url_link)
+        if str(response) == '<Response [200]>':
+            soup = BeautifulSoup(response.content, "html.parser")
+            s = separate_words(soup.text.replace('\n',''))
+            return s, 'Correct Link'
     except:
-        return 'Not a Valid URL Link'
-
-    if str(response) == '<Response [200]>':
-        return url_link
+        return 'No Text', 'Invalid Link'
 
 def get_approx_month_year(df):
     list_of_dates = df['Date'].tolist()
