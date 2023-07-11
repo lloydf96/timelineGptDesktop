@@ -23,7 +23,6 @@ def num_tokens_from_string(string: str) -> int:
     num_tokens = len(encoding.encode(string))
     return num_tokens
 
-
 def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
     '''
     Split a single document into multiple chunks of size less than CHUNK_SIZE and overlap
