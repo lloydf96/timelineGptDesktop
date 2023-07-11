@@ -14,6 +14,7 @@ from datetime import datetime
 ENCODING_NAME = "gpt-3.5-turbo"
 CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 50
+MAX_CHUNKS = 20
 BULLET_SIGN = '->'
 API_KEY = st.secrets['chatgpt_api']
 openai.api_key = API_KEY
@@ -43,7 +44,10 @@ def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
 
     #add full stop in end
     text_list = [x + "." for x in text_splitter.split_text(text)]
+    if len(text_list) > MAX_CHUNKS:
+        text_list = text_list[:MAX_CHUNKS]
     token_list = [str(int(num_tokens_from_string(x))) for x in text_list]
+    
     return text_list,token_list
 
 
