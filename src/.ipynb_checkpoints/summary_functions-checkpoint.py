@@ -1,3 +1,4 @@
+import requests
 from langchain.text_splitter import CharacterTextSplitter
 import tiktoken
 import pandas as pd
@@ -6,11 +7,13 @@ import ast
 import re
 import os
 import streamlit as st
+import time
+from datetime import datetime
 ### https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 
 ENCODING_NAME = "gpt-3.5-turbo"
 CHUNK_SIZE = 2000
-CHUNK_OVERLAP = 500
+CHUNK_OVERLAP = 50
 BULLET_SIGN = '->'
 API_KEY = st.secrets['chatgpt_api']
 openai.api_key = API_KEY
@@ -21,7 +24,6 @@ def num_tokens_from_string(string: str) -> int:
     encoding = tiktoken.encoding_for_model(ENCODING_NAME)
     num_tokens = len(encoding.encode(string))
     return num_tokens
-
 
 def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
     '''
@@ -41,7 +43,8 @@ def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
 
     #add full stop in end
     text_list = [x + "." for x in text_splitter.split_text(text)]
-    return text_list
+    token_list = [str(int(num_tokens_from_string(x))) for x in text_list]
+    return text_list,token_list
 
 
 def get_summary(text):
@@ -102,6 +105,7 @@ def process_summary(summary_list):
     return summary_list
 
 def isBC(x):
+    'return negative if true'
     try:
         if 'BC' in x:
             return -1
@@ -109,7 +113,6 @@ def isBC(x):
             return 0
     except:
         return 0
-
 
 
 def get_approx_month_year(df):
@@ -163,14 +166,25 @@ def summarize_text(text):
     This function converts text into list of summary and saves it as a dataframe
     '''
     # Convert text to chunks
-    text_list = get_chunks(text)
-
+    text_list,token_list = get_chunks(text)
+    # print(text_list)
+    # print(token_list)
+    no_of_chunks = len(text_list)
+    token_list = '_'.join(token_list)
+    
     # Get list of summary from chunks
+    begin_time_gpt = time.time()
     summary_list = get_list_of_summary(text_list)
-
+    end_time_gpt = time.time()
+    time_gpt = end_time_gpt - begin_time_gpt
     # Process summary list
+    
     summary_list = process_summary(summary_list)
-
+  
+    #todays date
+    todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+    date_alignment_error = False
+    
     #get summary dataframe from summary list
     summary_df = pd.DataFrame(data = summary_list,columns = ['Date','Event'])
 
@@ -203,9 +217,10 @@ def summarize_text(text):
         # a = 1/0
         
     except:
-        summary_df.to_pickle(os.path.join(os.getcwd(),'data','log_summary_df.pkl'))
-    
-    return summary_df
+        date_alignment_error = True
+        
+    gpt_meta_data = [no_of_chunks,token_list,time_gpt,date_alignment_error,todays_date]
+    return summary_df,gpt_meta_data
 
     
 # def get_approx_month_year(df):

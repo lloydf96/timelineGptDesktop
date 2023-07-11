@@ -22,8 +22,12 @@ credentials = service_account.Credentials.from_service_account_info(
     scopes=scope
 )
 
+
 client = gspread.authorize(credentials)
-sheet = client.open("timelineGenFeedback").sheet1
+workbook = client.open("timelineGen")
+
+feedback_sheet = workbook.worksheet('feedback')
+gpt_sheet = workbook.worksheet('gpt')
 
 APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 48000
@@ -53,24 +57,27 @@ if 'first_timeline_key' not in st.session_state:
 if 'download_timeline_png_key' not in st.session_state:
     st.session_state['download_timeline_png_key'] = True
 
-topic = st.text_input(label = "Enter Topic", max_chars = 20,help = "Enter a topic for which you need to generate a timeline.")
+topic = st.text_input(label = "Enter a Topic or URL", max_chars = 100,help = "Enter a topic for which you need to generate a timeline.")
 with st.expander("Or add your own text"):
     topic_text = st.text_area(label = "topic_text",label_visibility = "collapsed", max_chars = 48000, height = 400)
 
 enter_button = st.button("Generate Timeline!")
 
 if enter_button:
+
     with st.spinner('Generating Timeline...'):
         #st.write(topic) #comment in production
         if len(topic)>0 & len(topic_text) > 0:
             st.warning('As both the topic and user defined text are populated, we use "Enter Topic" text input to fetch topic data and generate the timeline. If you need to use user defined text, delete the text in "Enter Topic" text box ', icon="⚠️")
         if len(topic) > 0:
-            summary,source = get_summary(topic) 
+            summary,source,gpt_metadata = get_summary(topic) 
         else:
-            summary = get_summary_from_text(topic_text)
+            summary,gpt_metadata = get_summary_from_text(topic_text)
             source = "User Text"
             topic = topic_text.split(" ",1)[0]
             topic = re.sub(r"[^a-zA-Z]", "", topic)
+
+        gpt_sheet.insert_row(['t_'+topic]+gpt_metadata,2)
             
         #summary = pd.read_pickle(os.path.join(APP_PATH,'data','summary.pkl'))
         summary['Select'] = True
@@ -153,7 +160,7 @@ with st.expander("Feedback Form"):
         if feedback_form_submit:
             todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
             feedback = [feedback_name,feedback_email,feedback_title,feedback_text] + [todays_date]
-            sheet.insert_row(feedback, 2)
+            feedback_sheet.insert_row(feedback, 2)
             st.success("Feedback Submitted. Thank you!" ,icon = "✅")
             
         

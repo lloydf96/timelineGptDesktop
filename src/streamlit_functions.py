@@ -51,23 +51,31 @@ def get_timeline_html(topic,download):
 
 @st.cache_data(show_spinner=False)
 def get_summary(topic):
+
+    #check if the url is valid
+    text,link_flag = validate_url(topic)
     
-    wikipedia_link = get_wiki_link(topic)
-    if wikipedia_link == "NONE":
-        st.write("No Input Given")
-        return None
-        
+    #if it is invalid, then the text would be a different topic
+    if link_flag == 'Invalid Link':
+        wikipedia_link = get_wiki_link(topic)
+        if wikipedia_link == "NONE":
+            st.write("No Input Given")
+            return None
+        else:
+            #st.write(f"Data fetched from {wikipedia_link}")
+            text = get_wikipedia_text(wikipedia_link)
+            link = wikipedia_link
     else:
-        #st.write(f"Data fetched from {wikipedia_link}")
-        text = get_wikipedia_text(wikipedia_link)
-        summary = summarize_text(text)
-        return summary,wikipedia_link
+        link = topic
+
+    summary,gpt_metadata = summarize_text(text)
+    return summary,link,gpt_metadata
 
 
 @st.cache_data(show_spinner=False)
 def get_summary_from_text(text):
-    summary = summarize_text(text)
-    return summary
+    summary,gpt_metadata = summarize_text(text)
+    return summary,gpt_metadata
 
 def download_summary(summary,topic):
     
