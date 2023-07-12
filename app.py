@@ -77,6 +77,7 @@ if enter_button:
             topic = topic_text.split(" ",1)[0]
             topic = re.sub(r"[^a-zA-Z]", "", topic)
 
+        # print(summary)
         gpt_sheet.insert_row(['t_'+topic]+gpt_metadata,2)
             
         #summary = pd.read_pickle(os.path.join(APP_PATH,'data','summary.pkl'))

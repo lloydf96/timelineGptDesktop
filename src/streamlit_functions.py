@@ -78,10 +78,10 @@ def get_summary_from_text(text):
     return summary,gpt_metadata
 
 def download_summary(summary,topic):
-    
+    download_summary_df = summary[['Date','Event','Select']]
     st.download_button(
         label="Download CSV",
-        data=summary.to_csv().encode('utf-8'),
+        data = download_summary_df.to_csv().encode('utf-8'),
         file_name=f'summary_{topic}.csv',
         mime='text/csv'
     )

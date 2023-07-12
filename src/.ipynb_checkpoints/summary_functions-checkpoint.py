@@ -14,7 +14,7 @@ from datetime import datetime
 ENCODING_NAME = "gpt-3.5-turbo"
 CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 50
-MAX_CHUNKS = 20
+MAX_CHUNKS = 7
 BULLET_SIGN = '->'
 API_KEY = st.secrets['chatgpt_api']
 openai.api_key = API_KEY
@@ -46,9 +46,8 @@ def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
     text_list = [x + "." for x in text_splitter.split_text(text)]
     if len(text_list) > MAX_CHUNKS:
         text_list = text_list[:MAX_CHUNKS]
-    token_list = [str(int(num_tokens_from_string(x))) for x in text_list]
     
-    return text_list,token_list
+    return text_list
 
 
 def get_summary(text):
@@ -57,20 +56,28 @@ def get_summary(text):
     '''
     #replace Bullet sign with no space
     text = text.replace(BULLET_SIGN,"")
+    # print("input text \n")
+    # print(text)
     
     result = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
       messages=[
             {"role": "system", "content": "You are an extractive summarizer"},
-            {"role": "user", "content": f"For the text below, please extract all events along with their dates in the form of a list. Begin" +\
-             f" the bullet points with '{BULLET_SIGN}' and separate date and event with ':'. Each event list should begin with the date followed by the event description \n\n Text : {text}"}
+            {"role": "user", "content": f"For the text which begins after the symbol '*****', please extract all events along with their date. Begin" +\
+             f" the bullet points with '{BULLET_SIGN}' and separate date and event with ':'. Each event list should begin with the date followed by the event description. \n\n Text '*****'  {text}"}
         ],temperature = 0)
 
     response = result.choices[0].message.content
     if "\n\n" in response:
         response = response.split("\n\n")[1]
 
-    return response
+    # print(result)
+    # print(result.usage)
+    # print(result.usage.total_tokens)
+    # print("\n")
+    total_tokens = str(result.usage.total_tokens)
+
+    return response,total_tokens
 
 
 def get_list_of_summary(text_list):
@@ -79,14 +86,18 @@ def get_list_of_summary(text_list):
     '''
     #get list of summaries
     summary_list = [get_summary(text) for text in text_list]
-
+    # print(summary_list)
+    token_list = [i[1] for i in summary_list]
+    summary_list = [i[0] for i in summary_list]
+    # print(summary_list)
+    
     #split each summary into list
     summary_list = [summary.split(BULLET_SIGN) for summary in summary_list]
     
     #convert list of list into a single list
     summary_list = [event for sublist in summary_list for event in sublist]
 
-    return summary_list
+    return summary_list,token_list
 
 
 def process_summary(summary_list):
@@ -97,15 +108,16 @@ def process_summary(summary_list):
     #keep events which have colon in between
     summary_list = [event for event in summary_list if ':' in event]
 
+    # print(summary_list)
     #split date:event into date,event
     summary_list = [event.split(':',1) for event in summary_list]
 
     #remove empty events
     summary_list = [event for event in summary_list if len(event[0])>0]
-
+    # print(summary_list)
     #remove \n in event description
     summary_list = [[date,event.replace('\n','')] for [date,event] in summary_list]
-    
+    # print(summary_list)
     return summary_list
 
 def isBC(x):
@@ -121,6 +133,7 @@ def isBC(x):
 
 def get_approx_month_year(df):
     list_of_dates = df['Date'].tolist()
+    # print(list_of_dates)
     result = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
       messages=[
@@ -170,27 +183,34 @@ def summarize_text(text):
     This function converts text into list of summary and saves it as a dataframe
     '''
     # Convert text to chunks
-    text_list,token_list = get_chunks(text)
+    text_list = get_chunks(text)
+    
     # print(text_list)
     # print(token_list)
     no_of_chunks = len(text_list)
-    token_list = '_'.join(token_list)
     
     # Get list of summary from chunks
     begin_time_gpt = time.time()
-    summary_list = get_list_of_summary(text_list)
+    summary_list,token_list = get_list_of_summary(text_list)
     end_time_gpt = time.time()
     time_gpt = end_time_gpt - begin_time_gpt
-    # Process summary list
     
+    # print(summary_list)
+    total_tokens = sum([int(token) for token in token_list])
+    token_list = '_'.join(token_list)
+    # print(summary_list)
+    # print("processing summary\n")
+    # Process summary list
     summary_list = process_summary(summary_list)
-  
-    #todays date
+    # print(summary_list)
+    # #todays date
+    # print("getting dataframe")
     todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
     date_alignment_error = False
     
     #get summary dataframe from summary list
     summary_df = pd.DataFrame(data = summary_list,columns = ['Date','Event'])
+    # print(summary_df)
 
     try:
         #strip any space from front and back of the date
@@ -201,16 +221,19 @@ def summarize_text(text):
         
         #get approximate month year from dates list
         date_map = get_approx_month_year(summary_df)
-        
-        # print(date_map)
-        
-        
+ 
         #add timeline location to summary_df date
         summary_df['timeline'] = summary_df['Date'].map(date_map)
-    
+        # print("df w timeline")
+        # print(summary_df)
         #return summary_df,date_map
         #get month year and AD/BC from month year chatGPT output
-        summary_df[['month', 'year', 'AD_BC']] = summary_df['timeline'].str.split(expand=True)
+        try:
+            summary_df[['month', 'year', 'AD_BC']] = summary_df['timeline'].str.split(expand=True)
+        except :
+            #in case ad bc is still not available, add ad seperately in the end
+            summary_df[['month', 'year']] = summary_df['timeline'].str.split(expand=True)
+            summary_df['AD_BC'] = 'AD'
     
         # #if BC make year negative
         summary_df['year_loc'] = summary_df['year'].astype(int)*summary_df['AD_BC'].apply(lambda x : isBC(x))
@@ -218,12 +241,10 @@ def summarize_text(text):
         #order by year and month
         summary_df = summary_df.sort_values(['year_loc','month']).reset_index(drop = True)
 
-        # a = 1/0
-        
     except:
         date_alignment_error = True
         
-    gpt_meta_data = [no_of_chunks,token_list,time_gpt,date_alignment_error,todays_date]
+    gpt_meta_data = [no_of_chunks,token_list,total_tokens,time_gpt,date_alignment_error,todays_date]
     return summary_df,gpt_meta_data
 
     
