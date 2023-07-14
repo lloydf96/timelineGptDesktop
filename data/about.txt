@@ -1,0 +1,31 @@
+# About
+
+Welcome to the Timeline Generator app powered by ChatGPT!
+
+This app uses ChatGPT to generate timelines based on URLs, topics, or text. Whether you're a researcher, journalist, or curious about a subject, this app helps you create informative timelines quickly.
+
+## How it Works
+
+The Timeline Generator app leverages ChatGPT to extract key events from input. It analyzes content, identifies significant events, and arranges them in a chronological order to form a coherent timeline.
+
+## Features
+
+- **URL-based Timeline**: Enter the URL of an article or web page, and the app generates a timeline based on its content.
+
+- **Topic-based Timeline**: Enter a specific topic, and the app generates a timeline based on the topic you specify.
+
+- **Text-based Timeline**: Input your own text describing events or details, and the app generates a timeline based on it.
+
+## Disclaimer
+
+Please note that while ChatGPT strives to provide accurate timelines, results may not always be perfect or complete. We recommend using the generated timelines as a starting point for further research. We store searched URLs and topics to improve the app and identify bugs.
+
+## Feedback
+
+We value your feedback! If you have suggestions or encounter issues, please reach out to us directly or using the form below. Your input helps us enhance the app's functionality.
+
+### Developed By
+
+- [Lloyd Fernandes](https://www.linkedin.com/in/fernandeslloyd/)
+- [Praveen Kumar Murugaiah](https://www.linkedin.com/in/praveen-kumar-murugaiah-843415107/)
+- [Raunak Sengupta](https://www.linkedin.com/in/raunak-sengupta-b62886107/)

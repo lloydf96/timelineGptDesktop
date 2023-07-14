@@ -75,6 +75,7 @@ def get_summary(text):
     # print(result.usage)
     # print(result.usage.total_tokens)
     # print("\n")
+    st.session_state['chatgpt_tokens'] += result.usage.total_tokens
     total_tokens = str(result.usage.total_tokens)
 
     return response,total_tokens
@@ -145,6 +146,7 @@ def get_approx_month_year(df):
     if "\n\n" in response:
         response = response.split("\n\n")[1]
 
+    st.session_state['chatgpt_tokens'] += result.usage.total_tokens
     # print(response)
     dates = response.split('\n')
     # print(dates)

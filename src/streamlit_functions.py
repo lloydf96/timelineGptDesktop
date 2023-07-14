@@ -13,13 +13,20 @@ from datetime import datetime
 DATA_PATH = os.path.join(os.getcwd(),'data')
 FEEDBACK_PATH = os.path.join(os.getcwd(),"data","feedback","feedback.csv")
 
-def get_timeline_html(topic,download):
+def get_timeline_html(topic,format,download):
+    
     if download:
         with open(os.path.join(DATA_PATH,'timeline_display.html'),'w') as file:
             file.truncate()
             with open(os.path.join(DATA_PATH,'template_p1.txt')) as p1:
                 p1_str = p1.read()
                 p1_str = p1_str.replace('&&&&&&&&name&&&&&&&',topic)
+                p1_str = p1_str.replace('&&&&&&&&circlecolor&&&&&&&',format['circle_color'])
+                p1_str = p1_str.replace('&&&&&&&&middlelinecolor&&&&&&&',format['middle_line_color'])
+                p1_str = p1_str.replace('&&&&&&&&textboxcolor&&&&&&&',format['text_box_color'])
+                p1_str = p1_str.replace('&&&&&&&&backgroundcolor&&&&&&&',format['background_color'])
+                p1_str = p1_str.replace('&&&&&&&&font&&&&&&&',format['font_html'])
+
                 file.write(p1_str)
             with open(os.path.join(DATA_PATH,'events.json'),'r') as p2:
                 events = json.load(p2)
@@ -37,6 +44,12 @@ def get_timeline_html(topic,download):
             with open(os.path.join(DATA_PATH,'template_p1_download.txt')) as p1:
                 p1_str = p1.read()
                 p1_str = p1_str.replace('&&&&&&&&name&&&&&&&',topic)
+                p1_str = p1_str.replace('&&&&&&&&circlecolor&&&&&&&',format['circle_color'])
+                p1_str = p1_str.replace('&&&&&&&&middlelinecolor&&&&&&&',format['middle_line_color'])
+                p1_str = p1_str.replace('&&&&&&&&textboxcolor&&&&&&&',format['text_box_color'])
+                p1_str = p1_str.replace('&&&&&&&&backgroundcolor&&&&&&&',format['background_color'])
+                p1_str = p1_str.replace('&&&&&&&&font&&&&&&&',format['font_html'])
+
                 file.write(p1_str)
             with open(os.path.join(DATA_PATH,'events.json'),'r') as p2:
                 events = json.load(p2)

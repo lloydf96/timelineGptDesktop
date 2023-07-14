@@ -16,6 +16,37 @@ import gspread
 
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
+FONT_DICT = {
+    "Arial": "Arial, sans-serif",
+    "Helvetica": "Helvetica, sans-serif",
+    "Times New Roman": "Times New Roman, serif",
+    "Georgia": "Georgia, serif",
+    "Courier New": "Courier New, monospace",
+    "Verdana": "Verdana, sans-serif",
+    "Trebuchet MS": "Trebuchet MS, sans-serif",
+    "Arial Black": "Arial Black, sans-serif",
+    "Impact": "Impact, sans-serif",
+    "Comic Sans MS": "Comic Sans MS, sans-serif",
+    "Palatino": "Palatino, serif",
+    "Garamond": "Garamond, serif",
+    "Bookman": "Bookman, serif",
+    "Arial Narrow": "Arial Narrow, sans-serif",
+    "Lucida Console": "Lucida Console, monospace"
+}
+
+with open(os.path.join(DATA_PATH,'about.txt')) as about:
+    about_str = about.read()
+
+st.set_page_config(page_title="Timeline Generator",
+    page_icon="⏳",
+    layout="wide",
+    menu_items={
+        'About': about_str
+    })
+
+REVERSE_FONT_DICT = {value:key for key,value in FONT_DICT.items()}
+
+FONT_LIST = tuple(FONT_DICT.keys())
 # Create a connection object.
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"],
@@ -29,6 +60,7 @@ workbook = client.open("timelineGen")
 feedback_sheet = workbook.worksheet('feedback')
 gpt_sheet = workbook.worksheet('gpt')
 
+DATA_PATH = os.path.join(os.getcwd(),'data')
 APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 48000
 SUMMARY_COLUMN_CONFIG ={
@@ -38,9 +70,7 @@ SUMMARY_COLUMN_CONFIG ={
         )
     }
 
-st.set_page_config(page_title="Timeline Generator",
-    page_icon="⏳",
-    layout="wide")
+    
 
 # Website header
 st.title('Generate a TimeLine! ⏳')
@@ -56,6 +86,18 @@ if 'first_timeline_key' not in st.session_state:
 
 if 'download_timeline_png_key' not in st.session_state:
     st.session_state['download_timeline_png_key'] = True
+
+if 'chatgpt_tokens' not in st.session_state:
+    st.session_state['chatgpt_tokens'] = 0
+
+if 'timeline_format_key' not in st.session_state:
+    st.session_state['timeline_format_key'] = {
+                                                'circle_color':'#7DB46C',
+                                                'middle_line_color':'#010101',
+                                                'text_box_color':'#ABD6DF',
+                                                'background_color':'#E7EBE0',
+                                                'font_html':"Comic Sans MS, sans-serif"
+                                            }
 
 topic = st.text_input(label = "Enter a Topic or URL", max_chars = 100,help = "Enter a topic for which you need to generate a timeline.")
 with st.expander("Or add your own text"):
@@ -78,7 +120,8 @@ if enter_button:
             topic = re.sub(r"[^a-zA-Z]", "", topic)
 
         # print(summary)
-        gpt_sheet.insert_row(['t_'+topic]+gpt_metadata,2)
+        gpt_sheet.insert_row(['t_'+topic]+gpt_metadata + [st.session_state['chatgpt_tokens']],2)
+        st.session_state['chatgpt_tokens'] = 0
             
         #summary = pd.read_pickle(os.path.join(APP_PATH,'data','summary.pkl'))
         summary['Select'] = True
@@ -126,13 +169,40 @@ if st.session_state['update_summary_key'] or enter_button:
                 generate_json(display_summary)
                 
         with right_container:
-            html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['download_timeline_png_key'])
+            with st.expander("Format Timeline"):
+                format_timeline = st.form('format_timeline')
+                                         
+                with format_timeline:
+                    circle_color_val,middle_line_color_val,text_box_color_val,background_color_val,font_html\
+                    =list(st.session_state['timeline_format_key'].values())
+                    circle_color = st.color_picker('Circle Colour', circle_color_val)
+                    middle_line_color = st.color_picker('Middle Line Color', middle_line_color_val)
+                    text_box_color = st.color_picker('Text Box Color', text_box_color_val)
+                    background_color = st.color_picker('Background Color', background_color_val)
+                    font_name = REVERSE_FONT_DICT[font_html]
+                    font_index = FONT_LIST.index(font_name)
+                    font = st.selectbox('Text Font',FONT_LIST,index = font_index)
+                    
+                    format_timeline_submit = st.form_submit_button('Apply')
+                    
+                    if format_timeline_submit:
+                        font_html = FONT_DICT[font]
+                        st.session_state['timeline_format_key'] = {
+                                                                    'circle_color':circle_color,
+                                                                    'middle_line_color':middle_line_color,
+                                                                    'text_box_color':text_box_color,
+                                                                    'background_color':background_color,
+                                                                    'font_html':font_html
+                                                                }
+
+            html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],st.session_state['download_timeline_png_key'])
             download_timeline() 
             components.html(html_string,scrolling = True,height = 400)
                 
-        summary = form_data_editor.data_editor(summary[['Date','Event','Select']],num_rows="dynamic",use_container_width=True,\
-                                    key = 'data_editor',column_config = SUMMARY_COLUMN_CONFIG,\
-                                 hide_index = True)
+        summary = form_data_editor\
+        .data_editor(summary[['Date','Event','Select']],num_rows="dynamic",use_container_width=True,\
+                                    key = 'data_editor',disabled=("Date", "Event"),\
+                                    column_config = SUMMARY_COLUMN_CONFIG, hide_index = True)
 
 st.markdown(
         """
@@ -163,7 +233,12 @@ with st.expander("Feedback Form"):
             feedback = [feedback_name,feedback_email,feedback_title,feedback_text] + [todays_date]
             feedback_sheet.insert_row(feedback, 2)
             st.success("Feedback Submitted. Thank you!" ,icon = "✅")
-            
+
+st.write("---")
+markdown_text = '<h6>Made in &nbsp<img src="https://streamlit.io/images/brand/streamlit-mark-color.png" alt="Streamlit logo" height="16">&nbsp by <a href="https://www.linkedin.com/in/fernandeslloyd/"> Lloyd Fernandes</a> | <a href="https://www.linkedin.com/in/praveen-kumar-murugaiah-843415107/"> Praveen Kumar Murugaiah</a> | <a href="https://www.linkedin.com/in/raunak-sengupta-b62886107/"> Raunak Sengupta</a></h6>'
+st.markdown(markdown_text, unsafe_allow_html=True)
+
+         
         
         
     

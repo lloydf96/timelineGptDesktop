@@ -8,15 +8,12 @@
 }
 
 :root {
-  --primary-color: #ABD6DF;
-  --background-color: #E7EBE0;
-  --middleline-color: #010101;
-  --circle-color: #7DB46C;
+  --primary-color: #ABD6DFFF;
 }
 
 body {
-  background-color: var(--background-color);
-  font-family: Helvetica, sans-serif;
+  background-color: #E7EBE0FF;
+  font-family: 'Gill Sans', 'Gill Sans MT', Calibri, 'Trebuchet MS', sans-serif;
 }
 
 .div1 {
@@ -36,7 +33,7 @@ body {
   content: '';
   position: absolute;
   width: 9px;
-  background-color: var(--middleline-color);
+  background-color: rgb(15, 15, 15);
   top: 0;
   bottom: 0;
   left: 50%;
@@ -71,8 +68,8 @@ body {
   width: 25px;
   height: 25px;
   right: -17px;
-  background-color: var(--circle-color);
-  border: 4px solid var(--circle-color);
+  background-color: #7DB46CFF;
+  border: 4px solid #7DB46CFF;
   top: 15px;
   border-radius: 50%;
   z-index: 1;
@@ -161,19 +158,35 @@ body {
 }
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.0/html2canvas.min.js"></script>
+<script>
 
-</head>
-<body>
-    <div class="timeline" id="timeline-container"></div>
 
-    <script>
+function downloader() {
 
-  
+  html2canvas(document.getElementById('timeline-container')).then(function(canvas) {
+    // Convert canvas to image URL
+    var imageURL = canvas.toDataURL('image/png');
+    
+    // Create download link
+    var downloadLink = document.createElement('a');
+    downloadLink.href = imageURL;
+    downloadLink.download = 'timeline.png';
+    downloadLink.click();
+    // Trigger download after a short delay
+    
+  });
+  }
 
-        {
-            let events = [{"date": "1987", "event": " Richard A. Hosley II becomes CEO and President of BMC Software."}, {"date": "August 12, 1988", "event": " First day of trading for BMC stock."}, {"date": "July 1988", "event": " BMC is re-incorporated in Delaware and goes public with an initial public offering."}, {"date": "May 2013", "event": " BMC announces its acquisition by a group of major private equity investment groups."}, {"date": "September 2013", "event": " The acquisition process is completed and BMC is no longer publicly traded."}, {"date": "December 2016", "event": " Peter Leav becomes president and CEO of BMC Software."}, {"date": "October 2, 2018", "event": " BMC is acquired by KKR from a private investor group led by Bain Capital Private Equity and Golden Gate Capital."}, {"date": "2019", "event": " BMC launches SaaS-based BMC Helix Control-M application workflow orchestration."}, {"date": "October 2019", "event": " Ayman Sayed is named as President and CEO of BMC Software."}, {"date": "2020", "event": " BMC announces the launch of the TrueSight suite utilizing AI and machine learning."}];
 
-const timelineContainer = document.getElementById('timeline-container');
+  function renderer(){
+
+    document.addEventListener("DOMContentLoaded", () => {
+            // Fetch events from a file (events.json)
+            fetch('events.json')
+                .then(response => response.json())
+                .then(events => {
+                    // Create timeline items dynamically
+                    const timelineContainer = document.getElementById('timeline-container');
                     var cnt = 0;
 
                     events.forEach(event => {
@@ -222,13 +235,34 @@ const timelineContainer = document.getElementById('timeline-container');
                         }
                         cnt += 1;
                     });
-                    
-                
-        };
+                    /*
+                    for (let i = 0; i < cnt; i++) 
+                    {
+                      if (i%2 == 0)
+                      {
+                        const item = document.getElementById('item'+i);
+                        const cont = item.querySelector('.content');
+                        const outer_width = item.offsetWidth;
+                        const inner_width = cont.offsetWidth;
+                        const pos = outer_width - inner_width - 79;
+                        console.log(`Inner width ${i + 1}: ${pos}px`);
+                        cont.style.left = `${pos}px`;
+                      }
+                    }
+                    */
+                });
+        });
+  }
 
-    setTimeout(downloader, 1000);
+ </script> 
+</head>
+<body>
+    <div class="timeline" id="timeline-container"></div>
+
+    <script>
+        renderer();
+        setTimeout(downloader, 1000);
     </script>
-
 
 </body>
 </html>
