@@ -211,9 +211,7 @@ st.markdown(
             font-size: 15px;
             font-weight: 600;
         }
-        .css-u6mp4k {
-        zoom : 80%
-        }
+        
         </style>
         """,
         unsafe_allow_html=True,
