@@ -8,16 +8,16 @@
 }
 
 :root {
-  --primary-color: &&&&&&&&textboxcolor&&&&&&&;
-  --background-color: &&&&&&&&backgroundcolor&&&&&&&;
-  --middleline-color: &&&&&&&&middlelinecolor&&&&&&&;
-  --circle-color: &&&&&&&&circlecolor&&&&&&&;
+  --primary-color: #ABD6DF;
+  --background-color: #E7EBE0;
+  --middleline-color: #c9a9a9;
+  --circle-color: #7DB46C;
 }
 
 
 body {
   background-color: var(--background-color);
-  font-family: &&&&&&&&font&&&&&&&;
+  font-family: Georgia, serif;
 overflow: auto;
 }
 
@@ -142,4 +142,38 @@ margin-left : 20px;
   
 
         {
-            let events = 
+            let events = [{"date": "1987", "event": " Richard A. Hosley II becomes CEO and President of BMC Software."}, {"date": "August 12, 1988", "event": " First day of trading for BMC stock."}, {"date": "October 2, 2018", "event": " BMC is acquired by KKR from a private investor group led by Bain Capital Private Equity and Golden Gate Capital."}, {"date": "2019", "event": " BMC launches SaaS-based BMC Helix Control-M application workflow orchestration."}, {"date": "October 2019", "event": " Ayman Sayed is named as President and CEO of BMC Software."}, {"date": "2020", "event": " BMC announces the launch of the TrueSight suite utilizing AI and machine learning."}];
+
+const timelineContainer = document.getElementById('timeline-container');
+                    var cnt = 0;
+
+                     events.forEach(event => {
+                            const timelineItem = document.createElement('div');
+                            timelineItem.className = 'container right';
+                            timelineItem.id = "item"+cnt;
+
+                            const content_text = document.createElement('div');
+                            content_text.className = 'content';
+
+                            const date = document.createElement('h2');
+                            date.textContent = event.date;
+                            const summary = document.createElement('p');
+                            summary.textContent = event.event;
+
+                            content_text.appendChild(date);
+                            content_text.appendChild(summary);
+
+                            timelineItem.appendChild(content_text);
+
+                            timelineContainer.appendChild(timelineItem);  
+                    });
+                    
+                
+        };
+
+    setTimeout(downloader, 1000);
+    </script>
+
+
+</body>
+</html>

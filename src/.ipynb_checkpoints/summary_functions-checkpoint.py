@@ -245,7 +245,8 @@ def summarize_text(text):
 
     except:
         date_alignment_error = True
-        
+
+    summary_df['Order'] = list(range(1,summary_df.shape[0]+1))
     gpt_meta_data = [no_of_chunks,token_list,total_tokens,time_gpt,date_alignment_error,todays_date]
     return summary_df,gpt_meta_data
 

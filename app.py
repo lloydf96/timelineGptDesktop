@@ -63,10 +63,17 @@ gpt_sheet = workbook.worksheet('gpt')
 DATA_PATH = os.path.join(os.getcwd(),'data')
 APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 48000
+
 SUMMARY_COLUMN_CONFIG ={
         "Event" : st.column_config.Column(
             "Event",
             width="large"
+        ),
+    "Order": st.column_config.NumberColumn(
+            "Order",
+            help="Order of the event in timeline",
+            min_value=1,
+            step=1
         )
     }
 
@@ -99,7 +106,20 @@ if 'timeline_format_key' not in st.session_state:
                                                 'font_html':"Comic Sans MS, sans-serif"
                                             }
 
+# def save_format(circle_color_val,middle_line_color_val,text_box_color_val,background_color_val,font_html):
+#     st.session_state['timeline_format_key'] = {
+#                                                 'circle_color':circle_color,
+#                                                 'middle_line_color':middle_line_color,
+#                                                 'text_box_color':text_box_color,
+#                                                 'background_color':background_color,
+#                                                 'font_html':font_html
+#                                             }
+#     print('callback')
+#     print(st.session_state['timeline_format_key'])
+
+
 topic = st.text_input(label = "Enter a Topic or URL", max_chars = 100,help = "Enter a topic for which you need to generate a timeline.")
+
 with st.expander("Or add your own text"):
     topic_text = st.text_area(label = "topic_text",label_visibility = "collapsed", max_chars = 48000, height = 400)
 
@@ -148,6 +168,8 @@ if st.session_state['update_summary_key'] or enter_button:
         
         with left_left_container:
             st.caption(f"Source : {st.session_state['source_key']}")
+            st.caption("You can delete, change content of the cells and select/deselect the events in the table below. Click on Update Timeline! to reflect the changes in the timeline.")
+            
         with left_right_container:
             update_timeline_button = st.form_submit_button("Update Timeline!",\
                                                help = 'Edit the DataFrame and Click on "Update Timeline" to reflect the changes')
@@ -163,45 +185,54 @@ if st.session_state['update_summary_key'] or enter_button:
                 for i,edits in edited_rows.items():
                     for col,val in edits.items():
                         summary.loc[i,col] = val
-
+                        
+                summary.reset_index(inplace = True,drop = True)
+                deleted_rows = [i for i in data_editor['deleted_rows'] if i in summary.index]
+                summary = summary.drop(deleted_rows,axis = 0)
+                data_editor['deleted_rows'] = []
+                summary = summary.sort_values('Order')
+                
                 st.session_state['summary_key'] = summary
                 display_summary = summary[summary.Select]
                 generate_json(display_summary)
                 
         with right_container:
             with st.expander("Format Timeline"):
-                format_timeline = st.form('format_timeline')
+                format_timeline = st.form('format_timeline',clear_on_submit = False)
                                          
                 with format_timeline:
-                    circle_color_val,middle_line_color_val,text_box_color_val,background_color_val,font_html\
-                    =list(st.session_state['timeline_format_key'].values())
-                    circle_color = st.color_picker('Circle Colour', circle_color_val)
-                    middle_line_color = st.color_picker('Middle Line Color', middle_line_color_val)
-                    text_box_color = st.color_picker('Text Box Color', text_box_color_val)
-                    background_color = st.color_picker('Background Color', background_color_val)
-                    font_name = REVERSE_FONT_DICT[font_html]
-                    font_index = FONT_LIST.index(font_name)
-                    font = st.selectbox('Text Font',FONT_LIST,index = font_index)
+                    color_columns = st.columns(4)
                     
+                    circle_color = color_columns[0].color_picker('Circle Colour', '#7DB46C')
+                    middle_line_color = color_columns[1].color_picker('Vertical Line Color', '#010101')
+                    text_box_color = color_columns[2].color_picker('Text Box Color', '#ABD6DF')
+                    background_color = color_columns[3].color_picker('Background Color', '#E7EBE0')
+                    font = st.selectbox('Text Font',FONT_LIST,index = 0)
+                    font_html = FONT_DICT[font]
                     format_timeline_submit = st.form_submit_button('Apply')
-                    
-                    if format_timeline_submit:
-                        font_html = FONT_DICT[font]
-                        st.session_state['timeline_format_key'] = {
-                                                                    'circle_color':circle_color,
-                                                                    'middle_line_color':middle_line_color,
-                                                                    'text_box_color':text_box_color,
-                                                                    'background_color':background_color,
-                                                                    'font_html':font_html
-                                                                }
 
-            html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],st.session_state['download_timeline_png_key'])
+                    if format_timeline_submit:
+                        st.session_state['timeline_format_key'] = {
+                                                'circle_color':circle_color,
+                                                'middle_line_color':middle_line_color,
+                                                'text_box_color':text_box_color,
+                                                'background_color':background_color,
+                                                'font_html':font_html
+                                            }
+            #             print('post_call_back after apply')
+            #             print(st.session_state['timeline_format_key'])
+                        
+
+            # print('timeline_format_key before html_string')
+            # print(st.session_state['timeline_format_key'])
+            html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],\
+                                            st.session_state['download_timeline_png_key'])
             download_timeline() 
-            components.html(html_string,scrolling = True,height = 400)
+            components.html(html_string,scrolling = True,height = 500)
                 
         summary = form_data_editor\
-        .data_editor(summary[['Date','Event','Select']],num_rows="dynamic",use_container_width=True,\
-                                    key = 'data_editor',disabled=("Date", "Event"),\
+        .data_editor(summary[['Order','Date','Event','Select']],num_rows="dynamic",use_container_width=True,\
+                                    key = 'data_editor',\
                                     column_config = SUMMARY_COLUMN_CONFIG, hide_index = True)
 
 st.markdown(

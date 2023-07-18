@@ -14,7 +14,7 @@ DATA_PATH = os.path.join(os.getcwd(),'data')
 FEEDBACK_PATH = os.path.join(os.getcwd(),"data","feedback","feedback.csv")
 
 def get_timeline_html(topic,format,download):
-    
+
     if download:
         with open(os.path.join(DATA_PATH,'timeline_display.html'),'w') as file:
             file.truncate()
@@ -25,15 +25,15 @@ def get_timeline_html(topic,format,download):
                 p1_str = p1_str.replace('&&&&&&&&middlelinecolor&&&&&&&',format['middle_line_color'])
                 p1_str = p1_str.replace('&&&&&&&&textboxcolor&&&&&&&',format['text_box_color'])
                 p1_str = p1_str.replace('&&&&&&&&backgroundcolor&&&&&&&',format['background_color'])
-                p1_str = p1_str.replace('&&&&&&&&font&&&&&&&',format['font_html'])
 
+                p1_str = p1_str.replace('&&&&&&&&font&&&&&&&',format['font_html'])
                 file.write(p1_str)
             with open(os.path.join(DATA_PATH,'events.json'),'r') as p2:
                 events = json.load(p2)
                 file.write(json.dumps(events))
             with open(os.path.join(DATA_PATH,'template_p2.txt'),'r') as p3:
                 file.write(p3.read())
-    
+        
         with open(os.path.join(DATA_PATH,'timeline_display.html'),'r') as s:
             html_string = s.read()
         return html_string
@@ -91,7 +91,7 @@ def get_summary_from_text(text):
     return summary,gpt_metadata
 
 def download_summary(summary,topic):
-    download_summary_df = summary[['Date','Event','Select']]
+    download_summary_df = summary[['Order','Date','Event','Select']]
     st.download_button(
         label="Download CSV",
         data = download_summary_df.to_csv().encode('utf-8'),
