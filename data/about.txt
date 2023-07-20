@@ -1,7 +1,5 @@
 # About
 
-# About
-
 Welcome to the Timeline Generator app powered by ChatGPT!
 
 This app is designed to help anyone curious about a subject to create informative timelines quickly and effortlessly. Using the advanced capabilities of ChatGPT, this app can generate timelines based on URLs, specific topics, or your own input text.
