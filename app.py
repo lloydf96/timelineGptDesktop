@@ -106,7 +106,7 @@ if 'timeline_format_key' not in st.session_state:
                                                 'middle_line_color':'#010101',
                                                 'text_box_color':'#ABD6DF',
                                                 'background_color':'#E7EBE0',
-                                                'font_html':"Comic Sans MS, sans-serif"
+                                                'font_html': "Arial, sans-serif"
                                             }
 
 # def save_format(circle_color_val,middle_line_color_val,text_box_color_val,background_color_val,font_html):
@@ -208,10 +208,10 @@ if st.session_state['update_summary_key'] or enter_button:
             with format_timeline:
                 color_columns = st.columns(4)
                 
-                circle_color = color_columns[0].color_picker('Circle Colour', '#7DB46C')
-                middle_line_color = color_columns[1].color_picker('Vertical Line Color', '#010101')
-                text_box_color = color_columns[2].color_picker('Text Box Color', '#ABD6DF')
-                background_color = color_columns[3].color_picker('Background Color', '#E7EBE0')
+                circle_color = color_columns[0].color_picker('Circle', '#7DB46C')
+                middle_line_color = color_columns[1].color_picker('Vertical Line', '#010101')
+                text_box_color = color_columns[2].color_picker('Text Box', '#ABD6DF')
+                background_color = color_columns[3].color_picker('Background', '#E7EBE0')
                 font = st.selectbox('Text Font',FONT_LIST,index = 0)
                 font_html = FONT_DICT[font]
                 format_timeline_submit = st.form_submit_button('Apply')
