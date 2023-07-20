@@ -82,6 +82,9 @@ SUMMARY_COLUMN_CONFIG ={
 # Website header
 st.title('Generate a TimeLine! ⏳')
 
+with st.sidebar:
+    st.markdown(about_str)
+    
 if 'update_summary_key' not in st.session_state:
     st.session_state['update_summary_key'] = False
 
@@ -156,21 +159,21 @@ if st.session_state['update_summary_key'] or enter_button:
     st.session_state['update_summary_key'] = True
 
     with left_container:
-        left_left_container,right_left_container = st.columns([0.78,0.22])
-        with left_left_container:
-            st.write("#### Timeline Data")
-            
-        with right_left_container:
-            download_summary(summary,st.session_state['topic_key'])
+        # left_left_container,right_left_container = st.columns([0.78,0.22])
+        # with left_left_container:
+        st.write("##### Timeline Data")
 
         form_data_editor = st.form("data_editor")
-        left_left_container,left_right_container = form_data_editor.columns([0.75,0.25])
+        # left_left_container,left_right_container = form_data_editor.columns([0.75,0.25])
         
-        with left_left_container:
-            st.caption(f"Source : {st.session_state['source_key']}")
-            st.caption("You can delete, change content of the cells and select/deselect the events in the table below. Click on Update Timeline! to reflect the changes in the timeline.")
-            
-        with left_right_container:
+        # with left_left_container:
+        with form_data_editor:
+            data_editor_help = st.container()
+            with data_editor_help:
+                st.caption(f"Source : {st.session_state['source_key']}")
+                st.caption("You can delete, change content of the cells and select/deselect the events in the table below. Click on Update Timeline! to reflect the changes in the timeline.")
+                
+            # with left_right_container:
             update_timeline_button = st.form_submit_button("Update Timeline!",\
                                                help = 'Edit the DataFrame and Click on "Update Timeline" to reflect the changes')
 
@@ -195,45 +198,48 @@ if st.session_state['update_summary_key'] or enter_button:
                 st.session_state['summary_key'] = summary
                 display_summary = summary[summary.Select]
                 generate_json(display_summary)
+        # with right_left_container:
+        download_summary(summary,st.session_state['topic_key'])
                 
-        with right_container:
-            with st.expander("Format Timeline"):
-                format_timeline = st.form('format_timeline',clear_on_submit = False)
-                                         
-                with format_timeline:
-                    color_columns = st.columns(4)
+    with right_container:
+        with st.expander("Format Timeline"):
+            format_timeline = st.form('format_timeline',clear_on_submit = False)
+                                     
+            with format_timeline:
+                color_columns = st.columns(4)
+                
+                circle_color = color_columns[0].color_picker('Circle Colour', '#7DB46C')
+                middle_line_color = color_columns[1].color_picker('Vertical Line Color', '#010101')
+                text_box_color = color_columns[2].color_picker('Text Box Color', '#ABD6DF')
+                background_color = color_columns[3].color_picker('Background Color', '#E7EBE0')
+                font = st.selectbox('Text Font',FONT_LIST,index = 0)
+                font_html = FONT_DICT[font]
+                format_timeline_submit = st.form_submit_button('Apply')
+
+                if format_timeline_submit:
+                    st.session_state['timeline_format_key'] = {
+                                            'circle_color':circle_color,
+                                            'middle_line_color':middle_line_color,
+                                            'text_box_color':text_box_color,
+                                            'background_color':background_color,
+                                            'font_html':font_html
+                                        }
+        #             print('post_call_back after apply')
+        #             print(st.session_state['timeline_format_key'])
                     
-                    circle_color = color_columns[0].color_picker('Circle Colour', '#7DB46C')
-                    middle_line_color = color_columns[1].color_picker('Vertical Line Color', '#010101')
-                    text_box_color = color_columns[2].color_picker('Text Box Color', '#ABD6DF')
-                    background_color = color_columns[3].color_picker('Background Color', '#E7EBE0')
-                    font = st.selectbox('Text Font',FONT_LIST,index = 0)
-                    font_html = FONT_DICT[font]
-                    format_timeline_submit = st.form_submit_button('Apply')
 
-                    if format_timeline_submit:
-                        st.session_state['timeline_format_key'] = {
-                                                'circle_color':circle_color,
-                                                'middle_line_color':middle_line_color,
-                                                'text_box_color':text_box_color,
-                                                'background_color':background_color,
-                                                'font_html':font_html
-                                            }
-            #             print('post_call_back after apply')
-            #             print(st.session_state['timeline_format_key'])
-                        
-
-            # print('timeline_format_key before html_string')
-            # print(st.session_state['timeline_format_key'])
-            html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],\
-                                            st.session_state['download_timeline_png_key'])
-            download_timeline() 
-            components.html(html_string,scrolling = True,height = 500)
-                
-        summary = form_data_editor\
-        .data_editor(summary[['Order','Date','Event','Select']],num_rows="dynamic",use_container_width=True,\
-                                    key = 'data_editor',\
-                                    column_config = SUMMARY_COLUMN_CONFIG, hide_index = True)
+        # print('timeline_format_key before html_string')
+        # print(st.session_state['timeline_format_key'])
+        html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],\
+                                        st.session_state['download_timeline_png_key'])
+        
+        components.html(html_string,scrolling = True,height = 550)
+        download_timeline() 
+            
+    summary = form_data_editor\
+    .data_editor(summary[['Order','Date','Event','Select']],num_rows="dynamic",use_container_width=True,\
+                                key = 'data_editor',height = 400,\
+                                column_config = SUMMARY_COLUMN_CONFIG, hide_index = True)
 
 st.markdown(
         """
