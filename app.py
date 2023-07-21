@@ -65,15 +65,26 @@ APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 48000
 
 SUMMARY_COLUMN_CONFIG ={
-        "Event" : st.column_config.Column(
+        "Event" : st.column_config.TextColumn(
             "Event",
-            width="large"
+            width="large",
+            default = "None"
         ),
+    "Date" : st.column_config.TextColumn(
+        "Date",
+        default = "None"
+    ),
     "Order": st.column_config.NumberColumn(
             "Order",
             help="Order of the event in timeline",
             min_value=1,
-            step=1
+            step=1,
+            default = 1,
+        ),
+    "Select": st.column_config.CheckboxColumn(
+            "Order",
+            help="Select the events you wish to see in timeline plot",
+            default=True
         )
     }
 
@@ -124,7 +135,7 @@ if 'timeline_format_key' not in st.session_state:
 topic = st.text_input(label = "Enter a Topic or URL", max_chars = 100,help = "Enter a topic for which you need to generate a timeline.")
 
 with st.expander("Or add your own text"):
-    topic_text = st.text_area(label = "topic_text",label_visibility = "collapsed", max_chars = 48000, height = 400)
+    topic_text = st.text_area(label = "topic_text",label_visibility = "collapsed", max_chars = 24000, height = 400)
 
 enter_button = st.button("Generate Timeline!")
 
@@ -193,8 +204,18 @@ if st.session_state['update_summary_key'] or enter_button:
                 deleted_rows = [i for i in data_editor['deleted_rows'] if i in summary.index]
                 summary = summary.drop(deleted_rows,axis = 0)
                 data_editor['deleted_rows'] = []
-                summary = summary.sort_values('Order')
                 
+                print(data_editor)
+                added_rows = data_editor['added_rows']
+                if len(added_rows) > 0:
+                    
+                    added_rows_df = pd.DataFrame(added_rows)
+                    summary = pd.concat([summary,added_rows_df],ignore_index=True)
+                    summary = summary.reset_index(drop = True)
+                    data_editor['added_rows'] = []
+                    
+                summary = summary.sort_values('Order')
+                print(st.session_state['data_editor'])
                 st.session_state['summary_key'] = summary
                 display_summary = summary[summary.Select]
                 generate_json(display_summary)

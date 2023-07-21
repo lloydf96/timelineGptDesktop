@@ -1,4 +1,5 @@
 import requests
+import random
 from langchain.text_splitter import CharacterTextSplitter
 import tiktoken
 import pandas as pd
@@ -14,9 +15,11 @@ from datetime import datetime
 ENCODING_NAME = "gpt-3.5-turbo"
 CHUNK_SIZE = 2000
 CHUNK_OVERLAP = 50
-MAX_CHUNKS = 7
+MAX_CHUNKS = 5
+MAX_WORDS = 4000
 BULLET_SIGN = '->'
-API_KEY = st.secrets['chatgpt_api']
+API_KEY_LIST = st.secrets['chatgpt_api_list']
+API_KEY = random.choice(API_KEY_LIST)
 openai.api_key = API_KEY
 ERROR_LOG_FOLDER = os.getcwd()
 
@@ -34,6 +37,9 @@ def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
     '''
     
     assert type(text) == str, "text file is not of type string recheck"
+
+    list_of_words = text.split()
+    text = ' '.join(list_of_words[:MAX_WORDS])
     
     text_splitter = CharacterTextSplitter(        
         separator = ". ",
@@ -46,7 +52,6 @@ def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
     text_list = [x + "." for x in text_splitter.split_text(text)]
     if len(text_list) > MAX_CHUNKS:
         text_list = text_list[:MAX_CHUNKS]
-    
     return text_list
 
 
