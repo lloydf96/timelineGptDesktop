@@ -62,7 +62,7 @@ gpt_sheet = workbook.worksheet('gpt')
 
 DATA_PATH = os.path.join(os.getcwd(),'data')
 APP_PATH = os.getcwd()
-MAX_TEXT_CHARS = 48000
+MAX_TEXT_CHARS = 16000
 
 SUMMARY_COLUMN_CONFIG ={
         "Event" : st.column_config.TextColumn(
@@ -82,7 +82,7 @@ SUMMARY_COLUMN_CONFIG ={
             default = 1,
         ),
     "Select": st.column_config.CheckboxColumn(
-            "Order",
+            "Select",
             help="Select the events you wish to see in timeline plot",
             default=True
         )
