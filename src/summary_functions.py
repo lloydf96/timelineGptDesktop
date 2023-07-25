@@ -13,9 +13,9 @@ from datetime import datetime
 ### https://github.com/openai/openai-cookbook/blob/main/examples/How_to_count_tokens_with_tiktoken.ipynb
 
 ENCODING_NAME = "gpt-3.5-turbo"
-CHUNK_SIZE = 2000
+CHUNK_SIZE = 1000
 CHUNK_OVERLAP = 50
-MAX_CHUNKS = 5
+MAX_CHUNKS = 10
 MAX_WORDS = 4000
 BULLET_SIGN = '->'
 API_KEY_LIST = st.secrets['chatgpt_api_list']
@@ -52,8 +52,30 @@ def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
     text_list = [x + "." for x in text_splitter.split_text(text)]
     if len(text_list) > MAX_CHUNKS:
         text_list = text_list[:MAX_CHUNKS]
+        
     return text_list
 
+def content_moderation_api(text):
+    '''
+    Check if text follows openai content moderation guidelines
+    '''
+    response = openai.Moderation.create(
+    input=text
+)
+    output = response["results"][0].flagged
+    return output
+
+def content_moderation(text_list):
+    '''
+    Detect if the text chunks have any content violating openai guidelines. If so return True
+    '''
+    for text in text_list:
+        response = content_moderation_api(text)
+        if response:
+            
+            return True
+
+    return False
 
 def get_summary(text):
     '''
@@ -192,8 +214,11 @@ def summarize_text(text):
     # Convert text to chunks
     text_list = get_chunks(text)
     
-    # print(text_list)
-    # print(token_list)
+    #check if it violates content moderation guidelines by openai
+    response = content_moderation(text_list)
+    if response:
+        return None,None
+    
     no_of_chunks = len(text_list)
     
     # Get list of summary from chunks

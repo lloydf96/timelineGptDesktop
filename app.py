@@ -14,8 +14,10 @@ from streamlit_functions import *
 from google.oauth2 import service_account
 import gspread
 
+# For logging feedback and search in google sheets
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
+# Font options for selection in timeline
 FONT_DICT = {
     "Arial": "Arial, sans-serif",
     "Helvetica": "Helvetica, sans-serif",
@@ -33,10 +35,14 @@ FONT_DICT = {
     "Arial Narrow": "Arial Narrow, sans-serif",
     "Lucida Console": "Lucida Console, monospace"
 }
+REVERSE_FONT_DICT = {value:key for key,value in FONT_DICT.items()}
+FONT_LIST = tuple(FONT_DICT.keys())
 
+#Read about section
 with open(os.path.join(DATA_PATH,'about.txt')) as about:
     about_str = about.read()
 
+#Set page configs for streamlit app
 st.set_page_config(page_title="Timeline Generator",
     page_icon="⏳",
     layout="wide",
@@ -44,26 +50,25 @@ st.set_page_config(page_title="Timeline Generator",
         'About': about_str
     })
 
-REVERSE_FONT_DICT = {value:key for key,value in FONT_DICT.items()}
 
-FONT_LIST = tuple(FONT_DICT.keys())
-# Create a connection object.
+# Create a connection object for connecting with google sheets
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"],
     scopes=scope
 )
-
-
 client = gspread.authorize(credentials)
 workbook = client.open("timelineGen")
 
+#sheets in the google workbook
 feedback_sheet = workbook.worksheet('feedback')
 gpt_sheet = workbook.worksheet('gpt')
 
+# global variables for different folder paths
 DATA_PATH = os.path.join(os.getcwd(),'data')
 APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 16000
 
+#config dictionary for table display
 SUMMARY_COLUMN_CONFIG ={
         "Event" : st.column_config.TextColumn(
             "Event",
@@ -88,14 +93,8 @@ SUMMARY_COLUMN_CONFIG ={
         )
     }
 
-    
-
-# Website header
-st.title('Generate a TimeLine! ⏳')
-
-with st.sidebar:
-    st.markdown(about_str)
-    
+content_moderation_error = True
+#initialising session_states when the app first runs
 if 'update_summary_key' not in st.session_state:
     st.session_state['update_summary_key'] = False
 
@@ -120,64 +119,71 @@ if 'timeline_format_key' not in st.session_state:
                                                 'font_html': "Arial, sans-serif"
                                             }
 
-# def save_format(circle_color_val,middle_line_color_val,text_box_color_val,background_color_val,font_html):
-#     st.session_state['timeline_format_key'] = {
-#                                                 'circle_color':circle_color,
-#                                                 'middle_line_color':middle_line_color,
-#                                                 'text_box_color':text_box_color,
-#                                                 'background_color':background_color,
-#                                                 'font_html':font_html
-#                                             }
-#     print('callback')
-#     print(st.session_state['timeline_format_key'])
+# Website header
+st.title('Generate a TimeLine! ⏳')
 
+#sidebar with the about section
+with st.sidebar:
+    st.markdown(about_str)
 
-topic = st.text_input(label = "Enter a Topic or URL", max_chars = 100,help = "Enter a topic for which you need to generate a timeline.")
+#topic/url input textbox
+topic = st.text_input(label = "Enter a Topic or URL", max_chars = 100,\
+                      help = "Enter a topic for which you need to generate a timeline.")
 
+#expander to add custom text
 with st.expander("Or add your own text"):
     topic_text = st.text_area(label = "topic_text",label_visibility = "collapsed", max_chars = 24000, height = 400)
 
+#enter button to start timeline generation
 enter_button = st.button("Generate Timeline!")
 
+#the following sequence functions are run once enter_button is clicked i.e. enter_button is true.
 if enter_button:
-
-    with st.spinner('Generating Timeline...'):
-        #st.write(topic) #comment in production
+    with st.spinner('Generating Timeline. It may take a while ...'):
+        
         if len(topic)>0 & len(topic_text) > 0:
             st.warning('As both the topic and user defined text are populated, we use "Enter Topic" text input to fetch topic data and generate the timeline. If you need to use user defined text, delete the text in "Enter Topic" text box ', icon="⚠️")
+
+        #get summary of the topic if a topic is entered else use the custom text the user has input
         if len(topic) > 0:
+            #get the summary table along with the source URL and gpt usage data
             summary,source,gpt_metadata = get_summary(topic) 
         else:
             summary,gpt_metadata = get_summary_from_text(topic_text)
             source = "User Text"
+            
+            # save the first word of the user input text to append to the timeline and csv files to be downloaded.
             topic = topic_text.split(" ",1)[0]
+            #remove any characters other than alphabets to make sure the name does not violate any file_name conventions.
             topic = re.sub(r"[^a-zA-Z]", "", topic)
 
-        # print(summary)
-        gpt_sheet.insert_row(['t_'+topic]+gpt_metadata + [st.session_state['chatgpt_tokens']],2)
-        st.session_state['chatgpt_tokens'] = 0
-            
-        #summary = pd.read_pickle(os.path.join(APP_PATH,'data','summary.pkl'))
-        summary['Select'] = True
-        st.session_state['source_key'] = source
-        st.session_state['topic_key'] = topic
-        st.session_state['update_summary_key'] = True
-        st.session_state['summary_key'] = summary
+        if summary is None:
+            st.error(f'''The input text failed content moderation guidelines by OpenAI,
+            please recheck your text, Text Source : `{source}`''', icon="🚨")
+            content_moderation_error = False
+        else:
+                
+            #save gpt usage data in google sheets. chatgpt_tokens are saved seperately.
+            gpt_sheet.insert_row(['t_'+topic]+gpt_metadata + [st.session_state['chatgpt_tokens']],2)
+            st.session_state['chatgpt_tokens'] = 0
+    
+            #add select column to summary and update all session states.
+            summary['Select'] = True
+            st.session_state['source_key'] = source
+            st.session_state['topic_key'] = topic
+            st.session_state['update_summary_key'] = True
+            st.session_state['summary_key'] = summary
 
-if st.session_state['update_summary_key'] or enter_button:
+if (st.session_state['update_summary_key'] or enter_button) and content_moderation_error:
     left_container, right_container = st.columns(2)
     summary = st.session_state['summary_key']
     st.session_state['update_summary_key'] = True
 
     with left_container:
-        # left_left_container,right_left_container = st.columns([0.78,0.22])
-        # with left_left_container:
         st.write("##### Timeline Data")
 
         form_data_editor = st.form("data_editor")
-        # left_left_container,left_right_container = form_data_editor.columns([0.75,0.25])
-        
-        # with left_left_container:
+
         with form_data_editor:
             data_editor_help = st.container()
             with data_editor_help:
@@ -204,8 +210,6 @@ if st.session_state['update_summary_key'] or enter_button:
                 deleted_rows = [i for i in data_editor['deleted_rows'] if i in summary.index]
                 summary = summary.drop(deleted_rows,axis = 0)
                 data_editor['deleted_rows'] = []
-                
-                print(data_editor)
                 added_rows = data_editor['added_rows']
                 if len(added_rows) > 0:
                     
@@ -219,7 +223,7 @@ if st.session_state['update_summary_key'] or enter_button:
                 st.session_state['summary_key'] = summary
                 display_summary = summary[summary.Select]
                 generate_json(display_summary)
-        # with right_left_container:
+
         download_summary(summary,st.session_state['topic_key'])
                 
     with right_container:
@@ -245,12 +249,7 @@ if st.session_state['update_summary_key'] or enter_button:
                                             'background_color':background_color,
                                             'font_html':font_html
                                         }
-        #             print('post_call_back after apply')
-        #             print(st.session_state['timeline_format_key'])
                     
-
-        # print('timeline_format_key before html_string')
-        # print(st.session_state['timeline_format_key'])
         html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],\
                                         st.session_state['download_timeline_png_key'])
         
