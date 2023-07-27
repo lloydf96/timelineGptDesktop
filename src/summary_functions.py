@@ -34,11 +34,13 @@ API_KEY = random.choice(API_KEY_LIST)
 openai.api_key = API_KEY
 ERROR_LOG_FOLDER = os.getcwd()
 
+
 def num_tokens_from_string(string: str) -> int:
     """Returns the number of tokens in a text string."""
     encoding = tiktoken.encoding_for_model(ENCODING_NAME)
     num_tokens = len(encoding.encode(string))
     return num_tokens
+
 
 def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
     '''
@@ -70,6 +72,7 @@ def get_chunks(text,chunk_size = CHUNK_SIZE,chunk_overlap = CHUNK_OVERLAP):
         
     return text_list
 
+
 def content_moderation_api(text):
     '''
     Check if text follows openai content moderation guidelines
@@ -79,6 +82,7 @@ def content_moderation_api(text):
 )
     output = response["results"][0].flagged
     return output
+
 
 def content_moderation(text_list):
     '''
@@ -90,6 +94,7 @@ def content_moderation(text_list):
             return True
 
     return False
+
 
 def get_summary(text):
     '''
@@ -157,6 +162,7 @@ def process_summary(summary_list):
 
     return summary_list
 
+
 def isBC(x):
     'return negative if BC in x'
     try:
@@ -210,7 +216,8 @@ def get_approx_month_year(df):
         else:
             date_mapper[key] = value
     return date_mapper
-        
+
+    
 def summarize_text(text):
     '''
     This function converts text into list of summary and saves it as a dataframe

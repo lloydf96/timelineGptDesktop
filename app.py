@@ -57,7 +57,6 @@ st.set_page_config(page_title="Timeline Generator",
         'About': about_str
     })
 
-
 # Create a connection object for connecting with google sheets
 credentials = service_account.Credentials.from_service_account_info(
     st.secrets["gcp_service_account"],

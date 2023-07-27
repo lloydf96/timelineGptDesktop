@@ -59,9 +59,11 @@ def get_wikipedia_text(link):
   final_text = ' '.join(final_texts).strip().replace("\'s","'s")
   return final_text
 
+
 def separate_words(text):
     separated_text = re.sub(r'([a-z0-9])([A-Z0-9])', r'\1 \2', text)
     return separated_text
+
     
 def validate_url(url_link):
     '''
@@ -80,11 +82,5 @@ def validate_url(url_link):
         return 'No Text', 'Invalid Link'
 
 
-
 # Since our chatGPT api can work with max 90,000 tokens per minute, we will cap the number of tokens in our wikipedia text
-
-# # Save the text to file
-# text_file = open("output.txt", "w")
-# text_file.write(final_text)
-# text_file.close()
 
