@@ -1,3 +1,10 @@
+# -*- coding: utf-8 -*-
+"""streamlit_functions.py
+
+Created by Lloyd Fernandes, https://github.com/lloydf96?tab=repositories
+
+"""
+
 import streamlit as st
 import pandas as pd
 import numpy as np
