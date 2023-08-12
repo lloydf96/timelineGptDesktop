@@ -20,7 +20,10 @@ import json
 from streamlit_functions import *
 from google.oauth2 import service_account
 import gspread
+import time
 
+time_stamp = time.time()
+page_begin_time = time.time()
 # For logging feedback and search in google sheets
 scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
@@ -68,12 +71,13 @@ workbook = client.open("timelineGen")
 #sheets in the google workbook
 feedback_sheet = workbook.worksheet('feedback')
 gpt_sheet = workbook.worksheet('gpt')
+time_sheet = workbook.worksheet('timesheet')
 
 # global variables for different folder paths
 DATA_PATH = os.path.join(os.getcwd(),'data')
 APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 16000
-
+gpt_metadata= []
 #config dictionary for table display
 SUMMARY_COLUMN_CONFIG ={
         "Event" : st.column_config.TextColumn(
@@ -128,6 +132,8 @@ if 'timeline_format_key' not in st.session_state:
 # Website header
 st.title('Generate a TimeLine! ⏳')
 
+st.session_state['code_time'] = {}
+
 #sidebar with the about section
 with st.sidebar:
     st.markdown(about_str)
@@ -143,9 +149,12 @@ with st.expander("Or add your own text"):
 #enter button to start timeline generation
 enter_button = st.button("Generate Timeline!")
 
+#print(f"Time taken to load the page {time.time() - time_stamp}")
+st.session_state['code_time']['page_load'] = time.time() - time_stamp
+
 #the following sequence functions are run once enter_button is clicked i.e. enter_button is true.
 if enter_button:
-    with st.spinner('Generating Timeline. It may take a while ...'):
+    with st.spinner('Generating Timeline. It can take upto a minute to process...'):
         
         if len(topic)>0 & len(topic_text) > 0:
             st.warning('As both the topic and user defined text are populated, we use "Enter Topic" text input to fetch topic data and generate the timeline. If you need to use user defined text, delete the text in "Enter Topic" text box ', icon="⚠️")
@@ -162,17 +171,19 @@ if enter_button:
             topic = topic_text.split(" ",1)[0]
             #remove any characters other than alphabets to make sure the name does not violate any file_name conventions.
             topic = re.sub(r"[^a-zA-Z]", "", topic)
-
+        
         if summary is None:
             st.error(f'''The input text failed content moderation guidelines by OpenAI,
             please recheck your text, Text Source : `{source}`''', icon="🚨")
             content_moderation_error = False
         else:
-                
+
+            time_stamp = time.time()
             #save gpt usage data in google sheets. chatgpt_tokens are saved seperately.
             gpt_sheet.insert_row(['t_'+topic]+gpt_metadata + [st.session_state['chatgpt_tokens']],2)
             st.session_state['chatgpt_tokens'] = 0
-    
+            #print(f"Time to save data to google sheets {time.time() - time_stamp}")
+            st.session_state['code_time']['google_sheets_load'] = time.time() - time_stamp
             #add select column to summary and update all session states.
             summary['Select'] = True
             st.session_state['source_key'] = source
@@ -214,8 +225,10 @@ if (st.session_state['update_summary_key'] or enter_button) and content_moderati
 
         
         if enter_button:
+            time_stamp = time.time()
             #generate json from summary, this will be used to create html file
             generate_json(summary)
+            #print(f"Time taken to generate json {time.time() - time_stamp}")
             #once the first timeline is created, the session state turns false
             st.session_state['first_timeline_key'] = False
 
@@ -299,12 +312,14 @@ if (st.session_state['update_summary_key'] or enter_button) and content_moderati
 
         #Generate html string to generate a plot on the timeline based on the formatting options and 
         #whether to download the plot as png. (Download function is written as javascript in html string)
+        time_stamp = time.time()
         html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],\
                                         st.session_state['download_timeline_png_key'])
 
         #display the html from the html string
         components.html(html_string,scrolling = True,height = 550)
-
+        #print(f"Time taken to generate html {time.time() - time_stamp}")
+        st.session_state['code_time']['html_generation'] = time.time() - time_stamp
         #encapsulates the timeline download button, this updates the session_state['download_timeline_png_key']
         download_timeline() 
 
@@ -357,9 +372,17 @@ with st.expander("Feedback Form"):
 st.write("---")
 markdown_text = '<h6>Made in &nbsp<img src="https://streamlit.io/images/brand/streamlit-mark-color.png" alt="Streamlit logo" height="16">&nbsp by <a href="https://www.linkedin.com/in/fernandeslloyd/"> Lloyd Fernandes</a> | <a href="https://www.linkedin.com/in/praveen-kumar-murugaiah-843415107/"> Praveen Kumar Murugaiah</a> | <a href="https://www.linkedin.com/in/raunak-sengupta-b62886107/"> Raunak Sengupta</a></h6>'
 st.markdown(markdown_text, unsafe_allow_html=True)
+#print(f"Time taken to run app {time.time() - page_begin_time}")
+st.session_state['code_time']['app_run'] = time.time() - page_begin_time
+#print("\n")
 
-         
-        
+timesheet_row = "["+','.join('[{},{}]'.format(key, round(val,2)) for key, val in st.session_state['code_time'].items())+"]"
+if len(gpt_metadata) == 0:
+    runtime = todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
+else:
+    runtime = gpt_metadata[6]
+time_sheet.insert_row(['t_'+topic,runtime,timesheet_row],2)   
+
         
     
     
