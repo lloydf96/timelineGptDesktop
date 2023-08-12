@@ -377,10 +377,11 @@ st.session_state['code_time']['app_run'] = time.time() - page_begin_time
 #print("\n")
 
 timesheet_row = "["+','.join('[{},{}]'.format(key, round(val,2)) for key, val in st.session_state['code_time'].items())+"]"
+
 if len(gpt_metadata) == 0:
     runtime = todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
 else:
-    runtime = gpt_metadata[6]
+    runtime = gpt_metadata[5]
 time_sheet.insert_row(['t_'+topic,runtime,timesheet_row],2)   
 
         
