@@ -4,14 +4,58 @@
 
 ## Description
 
-A brief description of the project goes here. Explain what it does and why it's useful.
+This repository was curated to make it easy to run the app on local desktop. Follow the following steps to run the streamlit app straight from a local environment using conda or generate a docker image.
 
 ## Table of Contents
 
-
 ## Installation
+1. Clone the repo
+2. Create a .streamlit folder and add the following files
+   a. config.toml :
+       Copy the following in this file
+       ```
+function test() {
+  console.log('[theme]
+base="light"
+primaryColor="#143aa2"
+secondaryBackgroundColor="#cfe8ff"
+textColor="#0b3081"');
+}
+```
+    b. secrets.toml :
+Copy the following in this file
+       ```
+function test() {
+  console.log('chatgpt_api = "your api key"');
+}
+```
 
-Provide instructions on how to install and set up the project. Include any dependencies that need to be installed and any environment setup necessary.
+4. Run the following to generate conda environment
+ ```
+function test() {
+  console.log("conda timelinegpt create -f environment.yaml");
+}
+```
+3. Activate the environment
+```
+function test() {
+  console.log("conda activate timelinegpt");
+}
+``` 
+4. In the command prompt, navigate to the folder where app.py is located and then run the following to generate the streamlit app.
+```
+function test() {
+  console.log("streamlit run app.py");
+}
+```
+
+Alternatively you may generate a docker image by starting the docker daemon and then running the dockerfile as follows:
+```
+function test() {
+  console.log("docker build -t dockerfile .");
+}
+```
+
 
 ## Usage
 

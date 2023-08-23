@@ -18,14 +18,6 @@ from data_extract import *
 import streamlit.components.v1 as components
 import json
 from streamlit_functions import *
-from google.oauth2 import service_account
-import gspread
-import time
-
-time_stamp = time.time()
-page_begin_time = time.time()
-# For logging feedback and search in google sheets
-scope = ["https://spreadsheets.google.com/feeds",'https://www.googleapis.com/auth/spreadsheets',"https://www.googleapis.com/auth/drive.file","https://www.googleapis.com/auth/drive"]
 
 # Font options for selection in timeline
 FONT_DICT = {
@@ -60,24 +52,11 @@ st.set_page_config(page_title="Timeline Generator",
         'About': about_str
     })
 
-# Create a connection object for connecting with google sheets
-credentials = service_account.Credentials.from_service_account_info(
-    st.secrets["gcp_service_account"],
-    scopes=scope
-)
-client = gspread.authorize(credentials)
-workbook = client.open("timelineGen")
-
-#sheets in the google workbook
-feedback_sheet = workbook.worksheet('feedback')
-gpt_sheet = workbook.worksheet('gpt')
-time_sheet = workbook.worksheet('timesheet')
-
 # global variables for different folder paths
 DATA_PATH = os.path.join(os.getcwd(),'data')
 APP_PATH = os.getcwd()
 MAX_TEXT_CHARS = 16000
-gpt_metadata= []
+
 #config dictionary for table display
 SUMMARY_COLUMN_CONFIG ={
         "Event" : st.column_config.TextColumn(
@@ -117,9 +96,6 @@ if 'first_timeline_key' not in st.session_state:
 if 'download_timeline_png_key' not in st.session_state:
     st.session_state['download_timeline_png_key'] = True
 
-if 'chatgpt_tokens' not in st.session_state:
-    st.session_state['chatgpt_tokens'] = 0
-
 if 'timeline_format_key' not in st.session_state:
     st.session_state['timeline_format_key'] = {
                                                 'circle_color':'#7DB46C',
@@ -131,8 +107,6 @@ if 'timeline_format_key' not in st.session_state:
 
 # Website header
 st.title('Generate a TimeLine! ⏳')
-
-st.session_state['code_time'] = {}
 
 #sidebar with the about section
 with st.sidebar:
@@ -148,9 +122,6 @@ with st.expander("Or add your own text"):
 
 #enter button to start timeline generation
 enter_button = st.button("Generate Timeline!")
-
-#print(f"Time taken to load the page {time.time() - time_stamp}")
-st.session_state['code_time']['page_load'] = time.time() - time_stamp
 
 #the following sequence functions are run once enter_button is clicked i.e. enter_button is true.
 if enter_button:
@@ -178,12 +149,6 @@ if enter_button:
             content_moderation_error = False
         else:
 
-            time_stamp = time.time()
-            #save gpt usage data in google sheets. chatgpt_tokens are saved seperately.
-            gpt_sheet.insert_row(['t_'+topic]+gpt_metadata + [st.session_state['chatgpt_tokens']],2)
-            st.session_state['chatgpt_tokens'] = 0
-            #print(f"Time to save data to google sheets {time.time() - time_stamp}")
-            st.session_state['code_time']['google_sheets_load'] = time.time() - time_stamp
             #add select column to summary and update all session states.
             summary['Select'] = True
             st.session_state['source_key'] = source
@@ -225,7 +190,6 @@ if (st.session_state['update_summary_key'] or enter_button) and content_moderati
 
         
         if enter_button:
-            time_stamp = time.time()
             #generate json from summary, this will be used to create html file
             generate_json(summary)
             #print(f"Time taken to generate json {time.time() - time_stamp}")
@@ -312,14 +276,11 @@ if (st.session_state['update_summary_key'] or enter_button) and content_moderati
 
         #Generate html string to generate a plot on the timeline based on the formatting options and 
         #whether to download the plot as png. (Download function is written as javascript in html string)
-        time_stamp = time.time()
         html_string = get_timeline_html(st.session_state['topic_key'],st.session_state['timeline_format_key'],\
                                         st.session_state['download_timeline_png_key'])
 
         #display the html from the html string
         components.html(html_string,scrolling = True,height = 550)
-        #print(f"Time taken to generate html {time.time() - time_stamp}")
-        st.session_state['code_time']['html_generation'] = time.time() - time_stamp
         #encapsulates the timeline download button, this updates the session_state['download_timeline_png_key']
         download_timeline() 
 
@@ -343,52 +304,12 @@ st.markdown(
         unsafe_allow_html=True,
     )
 
-#define feedback form inside of an expander
-with st.expander("Feedback Form"):
-    form_feedback = st.form('feedback')
-    with form_feedback:
-        #feedback input
-        feedback_title = st.text_input(label = "Title", max_chars = 50,value = "")
-        feedback_text = st.text_input(label = "Feedback", max_chars = 300,value = "")
-        feedback_name = st.text_input(label = "Name", max_chars = 50, placeholder = 'Optional',value = "")
-        feedback_email = st.text_input(label = "Email", max_chars = 100, placeholder = 'Optional',value = "")
-
-        #submit feedback button
-        feedback_form_submit = st.form_submit_button("Submit")
-
-        
-        if feedback_form_submit:
-            #get the time of submission
-            todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-            feedback = [feedback_name,feedback_email,feedback_title,feedback_text] + [todays_date]
-
-            #insert the feedback along with the time of submission as a row in the google sheets.
-            feedback_sheet.insert_row(feedback, 2)
-
-            #flag displaying successful submission to the user
-            st.success("Feedback Submitted. Thank you!" ,icon = "✅")
-
 #footer
 st.write("---")
 markdown_text = '<h6>Made in &nbsp<img src="https://streamlit.io/images/brand/streamlit-mark-color.png" alt="Streamlit logo" height="16">&nbsp by <a href="https://www.linkedin.com/in/fernandeslloyd/"> Lloyd Fernandes</a> | <a href="https://www.linkedin.com/in/praveen-kumar-murugaiah-843415107/"> Praveen Kumar Murugaiah</a> | <a href="https://www.linkedin.com/in/raunak-sengupta-b62886107/"> Raunak Sengupta</a></h6>'
 st.markdown(markdown_text, unsafe_allow_html=True)
-#print(f"Time taken to run app {time.time() - page_begin_time}")
-st.session_state['code_time']['app_run'] = time.time() - page_begin_time
-#print("\n")
 
-timesheet_row = "["+','.join('[{},{}]'.format(key, round(val,2)) for key, val in st.session_state['code_time'].items())+"]"
 
-if len(gpt_metadata) == 0:
-    runtime = todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
-else:
-    runtime = gpt_metadata[5]
-time_sheet.insert_row(['t_'+topic,runtime,timesheet_row],2)   
-
-        
-    
-    
-        
-        
 
     
 

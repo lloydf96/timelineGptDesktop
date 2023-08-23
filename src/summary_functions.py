@@ -29,8 +29,7 @@ BULLET_SIGN = '->'
 
 #get the list of available api_keys and get one at random.
 #This was done for load balancing
-API_KEY_LIST = st.secrets['chatgpt_api_list']
-API_KEY = random.choice(API_KEY_LIST)
+API_KEY = st.secrets['chatgpt_api']
 openai.api_key = API_KEY
 ERROR_LOG_FOLDER = os.getcwd()
 
@@ -118,7 +117,6 @@ def get_summary(text):
         response = response.split("\n\n")[1]
 
     #get total number of chatgpt tokens (just for chatgpt usage information)
-    st.session_state['chatgpt_tokens'] += result.usage.total_tokens
     total_tokens = str(result.usage.total_tokens)
     return response,total_tokens
 
@@ -177,7 +175,6 @@ def isBC(x):
 def get_approx_month_year(df):
     #get list of dates
     list_of_dates = df['Date'].tolist()
-    time_stamp = time.time()
     #run the list of dates through chatgpt to get the output as an approximate month and year
     result = openai.ChatCompletion.create(
       model="gpt-3.5-turbo",
@@ -188,14 +185,9 @@ def get_approx_month_year(df):
 
     response = result.choices[0].message.content
 
-    print(f"Time taken to get dates from chatgpt {time.time() - time_stamp}")
-    st.session_state['code_time']['dates_from_chatgpt'] = time.time() - time_stamp
     if "\n\n" in response:
         response = response.split("\n\n")[1]
 
-    #update the tokens used for this prompt
-    st.session_state['chatgpt_tokens'] += result.usage.total_tokens
-    
     dates = response.split('\n')
 
     #get a mapping of the date input with the month year approximation
@@ -225,37 +217,20 @@ def summarize_text(text):
     '''
     This function converts text into list of summary and saves it as a dataframe
     '''
-    time_stamp = time.time()
     # Convert text to chunks
     text_list = get_chunks(text)
-    print(f"Time taken to get chunks {time.time() - time_stamp}")
-    st.session_state['code_time']['chunking'] = time.time() - time_stamp
     #check if it violates content moderation guidelines by openai
-    time_stamp = time.time()
     response = content_moderation(text_list)
-    st.session_state['code_time']['content_moderation'] = time.time() - time_stamp
-    print(f"Time taken for content_moderation {time.time() - time_stamp}")
     if response:
         return None,None
     
     no_of_chunks = len(text_list)
     
     # Get list of summary from chunks
-    begin_time_gpt = time.time()
     summary_list,token_list = get_list_of_summary(text_list)
-    end_time_gpt = time.time()
-
-    #get time taken to run chatgpt
-    time_gpt = end_time_gpt - begin_time_gpt
-    print(f"time taken to get chatgpt {time_gpt}")
-    st.session_state['code_time']['chatgpt_summary'] = time.time() - time_stamp
-    total_tokens = sum([int(token) for token in token_list])
-    token_list = '_'.join(token_list)
-
+    
     # Process summary list
-    time_stamp = time.time()
     summary_list = process_summary(summary_list)
-    print(f"time taken to process summary {time.time() - time_stamp}")
     
     #get the time when chatgpt was run
     todays_date = datetime.today().strftime('%Y-%m-%d %H:%M:%S')
@@ -272,11 +247,9 @@ def summarize_text(text):
         #select 1 out of multiple events with same date (because most likely its repeated events)
         summary_df = summary_df.groupby('Date').first().reset_index()
 
-        time_stamp = time.time()
         #get approximate month year from dates list
         date_map = get_approx_month_year(summary_df)
 
-        time_stamp = time.time()
         #add timeline location to summary_df date
         summary_df['timeline'] = summary_df['Date'].map(date_map)
  
@@ -293,7 +266,6 @@ def summarize_text(text):
     
         #order by year and month
         summary_df = summary_df.sort_values(['year_loc','month']).reset_index(drop = True)
-        print(f"Time taken to process dates {time.time() - time_stamp}")
     except:
         #flag if error in date ordering algorithm
         date_alignment_error = True
@@ -301,7 +273,7 @@ def summarize_text(text):
     summary_df['Order'] = list(range(1,summary_df.shape[0]+1))
 
     #gpt usage data stored for debugging in google sheets
-    gpt_meta_data = [no_of_chunks,token_list,total_tokens,time_gpt,date_alignment_error,todays_date]
+    gpt_meta_data = []
     return summary_df,gpt_meta_data
 
  

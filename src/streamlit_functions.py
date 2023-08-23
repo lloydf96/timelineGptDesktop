@@ -104,7 +104,6 @@ def get_summary(topic):
     '''
     Get summary given the input topic
     '''
-    time_stamp = time.time()
     #check if the url is valid
     text,link_flag = validate_url(topic)
     
@@ -121,13 +120,8 @@ def get_summary(topic):
             link = wikipedia_link
     else:
         link = topic
-    print(f"Time taken to load text {time.time() - time_stamp}")
-    st.session_state['code_time']['load_text'] = time.time() - time_stamp
-    #get summary and gpt usage information with input text
-    time_stamp = time.time()
     summary,gpt_metadata = summarize_text(text)
-    print(f"Time taken to get summary {time.time() - time_stamp}")
-    st.session_state['code_time']['get_summary'] = time.time() - time_stamp
+   
     return summary,link,gpt_metadata
 
     
