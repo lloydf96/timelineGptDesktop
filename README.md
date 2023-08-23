@@ -1,6 +1,6 @@
 # Project Name
 
-[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+[![License](https://img.shields.io/badge/License-GPL-blue.svg)](LICENSE)
 
 ## Description
 
