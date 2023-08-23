@@ -12,17 +12,20 @@ This repository was curated to make it easy to run the app on local desktop. Fol
 1. Clone the repo
 2. Create a .streamlit folder and add the following files
    a. config.toml :
-       Copy the following in this file
-       ```
-         [theme]
-         base="light"
-         primaryColor="#143aa2"
-         secondaryBackgroundColor="#cfe8ff"
-         textColor="#0b3081"
-         ```
+
+   Copy the following in this file
+    ```
+      [theme]
+      base="light"
+      primaryColor="#143aa2"
+      secondaryBackgroundColor="#cfe8ff"
+      textColor="#0b3081"
+      ```
+    
     b. secrets.toml :
-      Copy the following in this file
-       ```
+
+   Copy the following in this file
+    ```
          chatgpt_api = "your api key"
     ```
 
