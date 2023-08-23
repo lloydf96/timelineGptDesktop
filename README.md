@@ -10,9 +10,9 @@ This repository was curated to make it easy to run the app on local desktop. Fol
 
 ## Installation
 1. Clone the repo
-2. Create a /.streamlit folder and add the following files
+2. Create a ```/.streamlit``` folder and add the following files
 
-   a. config.toml :
+   a. ```config.toml``` :
 
    Copy the following in this file
     ```
@@ -23,11 +23,11 @@ This repository was curated to make it easy to run the app on local desktop. Fol
       textColor="#0b3081"
       ```
     
-    b. secrets.toml :
+    b. ```secrets.toml``` :
 
    Copy the following in this file
     ```
-         chatgpt_api = "your api key"
+    chatgpt_api = "your api key"
     ```
 
 4. Run the following to generate conda environment
