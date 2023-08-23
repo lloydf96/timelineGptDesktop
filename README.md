@@ -14,17 +14,17 @@ This repository was curated to make it easy to run the app on local desktop. Fol
    a. config.toml :
        Copy the following in this file
        ```
-           console.log([theme]
+         [theme]
          base="light"
          primaryColor="#143aa2"
          secondaryBackgroundColor="#cfe8ff"
          textColor="#0b3081"
-      ```
+         ```
     b. secrets.toml :
       Copy the following in this file
        ```
          chatgpt_api = "your api key"
-         ```
+    ```
 
 4. Run the following to generate conda environment
  ```
@@ -32,22 +32,16 @@ conda timelinegpt create -f environment.yaml
 ```
 3. Activate the environment
 ```
-function test() {
-  console.log("conda activate timelinegpt");
-}
+conda activate timelinegpt
 ``` 
 4. In the command prompt, navigate to the folder where app.py is located and then run the following to generate the streamlit app.
 ```
-function test() {
-  console.log("streamlit run app.py");
-}
+streamlit run app.py
 ```
 
 Alternatively you may generate a docker image by starting the docker daemon and then running the dockerfile as follows:
 ```
-function test() {
-  console.log("docker build -t dockerfile .");
-}
+docker build -t dockerfile .
 ```
 
 
