@@ -10,7 +10,8 @@ This repository was curated to make it easy to run the app on local desktop. Fol
 
 ## Installation
 1. Clone the repo
-2. Create a .streamlit folder and add the following files
+2. Create a /.streamlit folder and add the following files
+
    a. config.toml :
 
    Copy the following in this file
