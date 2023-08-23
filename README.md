@@ -14,20 +14,16 @@ This repository was curated to make it easy to run the app on local desktop. Fol
    a. config.toml :
        Copy the following in this file
        ```
-function test() {
   console.log('[theme]
 base="light"
 primaryColor="#143aa2"
 secondaryBackgroundColor="#cfe8ff"
-textColor="#0b3081"');
-}
+textColor="#0b3081"
 ```
     b. secrets.toml :
 Copy the following in this file
        ```
-function test() {
-  console.log('chatgpt_api = "your api key"');
-}
+chatgpt_api = "your api key"
 ```
 
 4. Run the following to generate conda environment
