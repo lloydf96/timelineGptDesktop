@@ -1,4 +1,4 @@
-# Project Name
+# TimelineGPT
 
 [![License](https://img.shields.io/badge/License-GPL-blue.svg)](LICENSE)
 
