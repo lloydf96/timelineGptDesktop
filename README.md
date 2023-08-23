@@ -14,23 +14,21 @@ This repository was curated to make it easy to run the app on local desktop. Fol
    a. config.toml :
        Copy the following in this file
        ```
-  console.log('[theme]
-base="light"
-primaryColor="#143aa2"
-secondaryBackgroundColor="#cfe8ff"
-textColor="#0b3081"
-```
+           console.log([theme]
+         base="light"
+         primaryColor="#143aa2"
+         secondaryBackgroundColor="#cfe8ff"
+         textColor="#0b3081"
+      ```
     b. secrets.toml :
-Copy the following in this file
+      Copy the following in this file
        ```
-chatgpt_api = "your api key"
-```
+         chatgpt_api = "your api key"
+         ```
 
 4. Run the following to generate conda environment
  ```
-function test() {
-  console.log("conda timelinegpt create -f environment.yaml");
-}
+conda timelinegpt create -f environment.yaml
 ```
 3. Activate the environment
 ```
