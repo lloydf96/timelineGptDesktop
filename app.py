@@ -71,8 +71,8 @@ SUMMARY_COLUMN_CONFIG ={
     "Order": st.column_config.NumberColumn(
             "Order",
             help="Order of the event in timeline",
-            min_value=1,
-            step=1,
+            min_value = -100000000,
+            step=0.01,
             default = 1,
         ),
     "Select": st.column_config.CheckboxColumn(

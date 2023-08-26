@@ -8,16 +8,15 @@
 }
 
 :root {
-  --primary-color: #23cdf3;
-  --background-color: #E7EBE0;
+  --primary-color: #32dcff;
+  --background-color: #fafbf9;
   --middleline-color: #010101;
-  --circle-color: #143b08;
+  --circle-color: #206f03;
 }
-
 
 body {
   background-color: var(--background-color);
-  font-family: Georgia, serif;
+  font-family: Trebuchet MS, sans-serif;
 overflow: auto;
 }
 
@@ -31,8 +30,7 @@ overflow: auto;
   position: relative;
   max-width: 1200px;
   margin: 0 auto;
-margin-left : 20px;
-  
+
 }
 
 /* The actual timeline (the vertical ruler) */
@@ -43,7 +41,7 @@ margin-left : 20px;
   background-color: var(--middleline-color);
   top: 0;
   bottom: 0;
-  left: 0%;
+  left: 5%;
   margin-left: -3px;
 }
 
@@ -94,7 +92,7 @@ margin-left : 20px;
 
 /* Place the container to the right */
 .right {
-  left: 0%;
+  left: 5%;
 }
 
 /* Add arrows to the left container (pointing right) */
@@ -130,6 +128,7 @@ margin-left : 20px;
   left: -16px;
 }
 
+
 </style>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.0/html2canvas.min.js"></script>
 
@@ -138,11 +137,25 @@ margin-left : 20px;
     <div class="timeline" id="timeline-container"></div>
 
     <script>
+function downloader() {
 
+  html2canvas(document.getElementById('timeline-container'),{backgroundColor: '#fafbf9'}).then(function(canvas) {
+    // Convert canvas to image URL
+    var imageURL = canvas.toDataURL('image/png');
+    
+    // Create download link
+    var downloadLink = document.createElement('a');
+    downloadLink.href = imageURL;
+    downloadLink.download = 'timeline_Cats.png';
+    downloadLink.click();
+    // Trigger download after a short delay
+    
+  });
+  }
   
 
         {
-            let events = [{"date": "July 1988", "event": " BMC is re-incorporated in Delaware and goes public with an initial public offering."}, {"date": "May 2013", "event": " BMC announces its acquisition by a group of major private equity investment groups for $6.9 billion."}, {"date": "October 2, 2018", "event": " BMC is acquired by KKR from a private investor group led by Bain Capital Private Equity and Golden Gate Capital."}, {"date": "October 2019", "event": " Ayman Sayed is named as President and CEO of BMC Software."}, {"date": "September 2013", "event": " The acquisition process is completed and BMC is no longer publicly traded."}];
+            let events = [{"date": "7500 BC", "event": " Domestication of cats occurred in the Near East."}, {"date": "Around 7500\u20137200 BC", "event": " The earliest known indication for the taming of an African wildcat (F. lybica) was excavated in Shillourokambos, southern Cyprus."}, {"date": "Around 5500 BC", "event": " The leopard cat (Prionailurus bengalensis) was tamed independently in China."}, {"date": "3100 BC", "event": " Cats were venerated in ancient Egypt."}, {"date": "Around 1200 BC", "event": " The earliest known evidence for the occurrence of the domestic cat in Greece."}, {"date": "5th century BC", "event": " Domestic cats were familiar animals around settlements in Magna Graecia and Etruria."}, {"date": "5th century", "event": " The Egyptian domestic cat lineage arrived in a Baltic Sea port in northern Germany."}, {"date": "Late 6th century", "event": " The word \"cat\" (Old English catt) was first used, possibly derived from Late Latin cattus."}, {"date": "16th century", "event": " The word \"puss\" (later extended to \"pussy\" and \"pussycat\") was introduced, possibly from Dutch poes or Low German puuskatte."}, {"date": "1758", "event": " Carl Linnaeus proposed the scientific name Felis catus for a domestic cat."}, {"date": "1777", "event": " Johann Christian Polycarp Erxleben proposed the scientific name Felis catus domesticus for a domestic cat."}, {"date": "Mid 19th century", "event": " Development of cat breeds started."}, {"date": "1904", "event": " Konstantin Satunin proposed the scientific name Felis daemon for a black cat from the Transcaucasus, later identified as a domestic cat."}, {"date": "2003", "event": " The International Commission on Zoological Nomenclature ruled that the domestic cat is a distinct species, Felis catus."}, {"date": "2007", "event": " The domestic cat was considered a subspecies, F. silvestris catus, of the European wildcat (F. silvestris) following results of phylogenetic research."}, {"date": "2017", "event": " Domestic cat was the second most popular pet in the United States, with 95.6 million cats owned."}, {"date": "2020", "event": " Estimated population of 10.9 million pet cats in the United Kingdom."}, {"date": "2021", "event": " Estimated 220 million owned and 480 million stray cats in the world."}];
 
 const timelineContainer = document.getElementById('timeline-container');
                     var cnt = 0;
