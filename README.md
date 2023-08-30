@@ -8,6 +8,7 @@ This app is designed to help anyone curious about a subject to create informativ
 
 ## [Go To Streamlit app!](timelinegpt.streamlit.app)
  [Repo of the deployed streamlit app](https://github.com/praveen-kumar-data-science/timelineGen)
+The repo contains adapters used to connect to google sheets to save metadata on app usage, bugs along with any user feedback. These adapters are not part of this repo.
 
 ### How it Works
 The Timeline Generator app leverages the power of ChatGPT to extract key events from the text and arranges them in chronological order to create a coherent timeline.
