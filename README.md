@@ -6,8 +6,14 @@
 Welcome to the Timeline Generator app powered by ChatGPT!
 This app is designed to help anyone curious about a subject to create informative timelines quickly and effortlessly. Using the advanced capabilities of ChatGPT, this app can generate timelines based on URLs, specific topics, or your own input text.
 
+## [Go To Streamlit app!](timelinegpt.streamlit.app)
+ [Repo of the deployed streamlit app](https://github.com/praveen-kumar-data-science/timelineGen)
+
 ### How it Works
 The Timeline Generator app leverages the power of ChatGPT to extract key events from the text and arranges them in chronological order to create a coherent timeline.
+We use the BeautifulSoup library to extract the contents from the link (or Wikipedia page) and then pass them to the ChatGPT API with suitable prompt engineering to generate a timeline of events. Then, we use basic Python nltk packages to clean the results obtained from the chatGPT API, apply feature engineering techniques and present the final table of information on the events.
+The user can also filter and select the events that they feel are necessary to include in the timeline and also have an opportunity the download the Excel/CSV file containing the events. The timeline visualization is presented in the form of a .html page.
+The entire app was built on streamlit
 
 ### Key Features
 ##### URL-based Timeline: 
